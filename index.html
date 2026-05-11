@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LED Display Pengumuman</title>
+    <title>Mega LED Display</title>
     <style>
         * { box-sizing: border-box; }
         body, html {
@@ -12,167 +12,161 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #000; /* Hitam pekat agar kontras di LED */
+            background-color: #000;
             font-family: 'Arial Black', sans-serif;
         }
 
-        /* Panel Input - Bisa disembunyikan */
+        /* Panel Admin */
         #admin-panel {
             position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 999;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            transition: opacity 0.3s;
+            top: 20px;
+            left: 20px;
+            z-index: 9999;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(255,255,255,0.2);
         }
-        .hidden { opacity: 0; pointer-events: none; }
+        .hidden { display: none; }
 
-        /* Tampilan Utama LED */
-        .led-container {
+        /* Container Full Screen */
+        .display-area {
             width: 100%;
             height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             position: relative;
+            padding: 0 5%;
         }
 
-        .announcement-window {
-            width: 100%;
-            height: 120px; /* Tinggi satu baris pengumuman */
-            overflow: hidden;
-            position: relative;
-            background: #1a1a1a;
-            border-top: 4px solid #ffcc00;
-            border-bottom: 4px solid #ffcc00;
-        }
-
-        .announcement-list {
+        /* List Pengumuman yang Bergerak */
+        #list-wrapper {
             position: absolute;
-            width: 100%;
+            width: 90%;
             margin: 0;
             padding: 0;
             list-style: none;
-            transition: top 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            top: 100%; /* Mulai dari bawah layar */
         }
 
-        .announcement-list li {
-            height: 120px;
-            display: flex;
-            align-items: center;
-            padding: 0 50px;
+        .announcement-item {
+            padding: 40px 0;
+            border-bottom: 2px solid #333;
             color: #fff;
-            font-size: 3rem; /* Font besar untuk LED */
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column; /* Tanggal di atas, teks di bawah */
+            gap: 10px;
         }
 
         .date-badge {
             background: #ff4757;
-            padding: 5px 20px;
-            border-radius: 10px;
-            font-size: 1.5rem;
-            margin-right: 30px;
             color: white;
-            white-space: nowrap;
+            padding: 5px 20px;
+            font-size: 1.8rem;
+            width: fit-content;
+            border-radius: 5px;
+        }
+
+        .text-content {
+            font-size: 4.5rem; /* Ukuran teks raksasa */
+            line-height: 1.2;
+            text-transform: uppercase;
+            color: #ffcc00; /* Warna kuning khas LED */
         }
 
         .instruction {
             position: fixed;
             bottom: 10px;
             right: 10px;
-            color: #444;
+            color: #333;
             font-size: 12px;
-            font-family: sans-serif;
         }
     </style>
 </head>
 <body>
 
     <div id="admin-panel">
-        <h3 style="margin-top:0">Control Panel</h3>
-        <input type="text" id="judul" placeholder="Isi Pengumuman..." style="padding:8px; width:200px">
-        <input type="date" id="tanggal" style="padding:8px">
-        <button onclick="tambahPengumuman()" style="padding:8px 15px; background:#27ae60; color:white; border:none; cursor:pointer">Tambah</button>
-        <button onclick="hapusSemua()" style="padding:8px 15px; background:#c0392b; color:white; border:none; cursor:pointer">Hapus Semua</button>
-        <p style="font-size: 11px; color: #666;">Tekan <b>"H"</b> untuk sembunyi/munculkan panel ini.</p>
+        <h2 style="margin:0 0 10px 0">Input LED</h2>
+        <input type="text" id="judul" placeholder="Isi Pengumuman..." style="padding:10px; width:300px; font-size:16px">
+        <input type="date" id="tanggal" style="padding:10px; font-size:16px">
+        <button onclick="tambahPengumuman()" style="padding:10px 20px; background:#27ae60; color:white; border:none; font-weight:bold; cursor:pointer">TAMBAH</button>
+        <button onclick="hapusSemua()" style="padding:10px; background:#c0392b; color:white; border:none; cursor:pointer">RESET</button>
+        <p style="color:#666; font-size:12px">Tekan <b>"H"</b> untuk sembunyi/munculkan panel ini.</p>
     </div>
 
-    <div class="led-container">
-        <div class="announcement-window">
-            <ul id="list-wrapper" class="announcement-list" style="top: 0;">
-                </ul>
-        </div>
+    <div class="display-area">
+        <ul id="list-wrapper">
+            </ul>
     </div>
 
     <div class="instruction">Tekan 'H' untuk Menu</div>
 
     <script>
         let listWrapper = document.getElementById('list-wrapper');
-        let currentPos = 0;
-        let dataPengumuman = JSON.parse(localStorage.getItem('myAnnouncements')) || [];
+        let dataPengumuman = JSON.parse(localStorage.getItem('ledData')) || [];
+        let position = window.innerHeight;
+        let animationId;
 
-        // Fungsi Render Data
         function renderData() {
             listWrapper.innerHTML = '';
             if (dataPengumuman.length === 0) {
-                listWrapper.innerHTML = `<li><span class="date-badge">INFO</span> Standby - Masukkan Pengumuman...</li>`;
+                listWrapper.innerHTML = `<li class="announcement-item"><div class="text-content">STANDBY - BELUM ADA PENGUMUMAN</div></li>`;
                 return;
             }
             dataPengumuman.forEach(item => {
                 let li = document.createElement('li');
-                li.innerHTML = `<span class="date-badge">${item.tgl}</span> ${item.teks}`;
+                li.className = 'announcement-item';
+                li.innerHTML = `
+                    <div class="date-badge">${item.tgl}</div>
+                    <div class="text-content">${item.teks}</div>
+                `;
                 listWrapper.appendChild(li);
             });
+            // Reset posisi ke bawah saat ada data baru
+            position = window.innerHeight;
         }
 
         function tambahPengumuman() {
             let judul = document.getElementById('judul').value;
             let tanggal = document.getElementById('tanggal').value;
-
-            if (!judul || !tanggal) return alert("Isi semua data!");
+            if (!judul || !tanggal) return;
 
             let d = new Date(tanggal);
-            let dateString = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+            let dateString = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
             dataPengumuman.push({ teks: judul, tgl: dateString });
-            localStorage.setItem('myAnnouncements', JSON.stringify(dataPengumuman));
-            
+            localStorage.setItem('ledData', JSON.stringify(dataPengumuman));
             document.getElementById('judul').value = '';
             renderData();
         }
 
         function hapusSemua() {
-            if(confirm("Hapus semua data?")) {
+            if(confirm("Hapus semua?")) {
                 dataPengumuman = [];
-                localStorage.removeItem('myAnnouncements');
+                localStorage.removeItem('ledData');
                 renderData();
             }
         }
 
-        // Toggle Panel Admin dengan Tombol 'H'
+        // Animasi Smooth Scroll Ke Atas
+        function animate() {
+            position -= 2; // Kecepatan gulung (naikkan angka untuk lebih cepat)
+            
+            // Jika semua teks sudah lewat ke atas, balik lagi ke bawah
+            if (position < -listWrapper.offsetHeight) {
+                position = window.innerHeight;
+            }
+            
+            listWrapper.style.top = position + 'px';
+            animationId = requestAnimationFrame(animate);
+        }
+
         window.addEventListener('keydown', (e) => {
             if (e.key.toLowerCase() === 'h') {
                 document.getElementById('admin-panel').classList.toggle('hidden');
             }
         });
 
-        // Auto Scroll Logic
-        setInterval(() => {
-            let items = listWrapper.getElementsByTagName('li');
-            if (items.length > 1) {
-                currentPos -= 120;
-                if (Math.abs(currentPos) >= items.length * 120) {
-                    currentPos = 0;
-                }
-                listWrapper.style.top = currentPos + "px";
-            }
-        }, 4000); // Ganti setiap 4 detik
-
-        // Load awal
         renderData();
+        animate(); // Jalankan animasi
     </script>
 </body>
 </html>
