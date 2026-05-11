@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mega LED Display - Fixed & Pro</title>
+    <title>Mega LED Display - Stable Version</title>
     <style>
         * { box-sizing: border-box; }
         body, html {
@@ -17,84 +17,71 @@
             position: fixed; top: 20px; left: 20px; z-index: 9999;
             background: white; padding: 25px; border-radius: 12px;
             box-shadow: 0 0 40px rgba(255,255,255,0.3);
-            width: 550px; max-height: 95vh; overflow-y: auto;
+            width: 500px; max-height: 90vh; overflow-y: auto;
         }
         .hidden { display: none; }
 
-        /* Styling Form */
-        .setting-section {
-            background: #f0f2f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;
-            font-family: sans-serif; border: 1px solid #ddd;
-        }
+        /* Tabel Input agar Sejajar */
         .input-table { width: 100%; margin-bottom: 15px; border-collapse: collapse; }
-        .input-table td { padding: 10px 5px; font-family: sans-serif; font-weight: bold; color: #333; vertical-align: top; }
+        .input-table td { padding: 8px 5px; font-family: sans-serif; font-weight: bold; vertical-align: top; }
         
-        textarea { 
-            width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ccc; 
-            font-size: 16px; font-family: sans-serif; min-height: 100px; resize: vertical;
-        }
+        textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; min-height: 100px; font-family: sans-serif; }
         input[type="date"] { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
 
-        /* Tombol Simpan */
-        #btn-save {
-            padding: 15px; background: #27ae60; color: white; border: none; 
-            width: 100%; font-weight: bold; font-size: 18px; cursor: pointer; 
-            border-radius: 8px; transition: 0.3s;
-        }
-        #btn-save:hover { background: #219150; }
+        .slider-box { background: #f0f2f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-family: sans-serif; }
 
         /* List Kelola */
         .admin-item { 
             display: flex; justify-content: space-between; align-items: center;
-            background: #f8f9fa; padding: 12px; margin-bottom: 8px;
-            border-left: 5px solid #27ae60; border-radius: 4px; font-family: sans-serif;
+            background: #f1f1f1; padding: 10px; margin-bottom: 8px;
+            border-radius: 6px; font-family: sans-serif; font-size: 14px;
         }
 
-        /* Tampilan Utama LED */
+        /* Area LED */
         .display-area { width: 100%; height: 100vh; position: relative; }
         #list-wrapper { position: absolute; width: 100%; margin: 0; padding: 0 50px; list-style: none; top: 100%; }
-        .announcement-item { padding: 60px 0; border-bottom: 3px solid #222; display: flex; flex-direction: column; gap: 20px; }
+        .announcement-item { padding: 50px 0; border-bottom: 2px solid #222; display: flex; flex-direction: column; gap: 15px; }
         
-        /* Warna Zebra */
+        /* Warna Bergantian */
         .announcement-item:nth-child(odd) .text-content { color: #ffcc00; } 
-        .announcement-item:nth-child(even) .text-content { color: #00eaff; } 
+        .announcement-item:nth-child(even) .text-content { color: #00e5ff; } 
 
-        .date-badge { background: #ff4757; color: white; padding: 8px 30px; font-size: 2.5rem; width: fit-content; border-radius: 10px; }
-        .text-content { line-height: 1.2; text-transform: uppercase; text-shadow: 5px 5px 0px #000; word-wrap: break-word; white-space: pre-line; }
+        .date-badge { background: #ff4757; color: white; padding: 5px 25px; font-size: 2rem; width: fit-content; border-radius: 8px; }
+        .text-content { line-height: 1.1; text-transform: uppercase; text-shadow: 4px 4px 0px #000; white-space: pre-line; }
     </style>
 </head>
 <body>
 
     <div id="admin-panel">
-        <h2 style="margin:0 0 15px 0; font-family: sans-serif;">Control Panel LED</h2>
+        <h2 style="margin:0 0 20px 0; font-family: sans-serif;">Control Panel LED</h2>
         
-        <div class="setting-section">
-            <label style="font-weight: bold;">Ukuran Huruf: <span id="font-val">5</span>rem</label>
-            <input type="range" min="1" max="15" step="0.5" value="5" style="width:100%" id="fontSlider" oninput="changeFontSize(this.value)">
+        <div class="slider-box">
+            <label>Ukuran Huruf: <span id="font-val">5</span>rem</label>
+            <input type="range" min="1" max="15" step="0.5" value="5" style="width:100%" id="fontSlider" oninput="ubahFont(this.value)">
         </div>
 
         <input type="hidden" id="edit-index" value="-1">
         
         <table class="input-table">
             <tr>
-                <td width="140">PENGUMUMAN</td>
+                <td width="130">PENGUMUMAN</td>
                 <td width="20">:</td>
-                <td><textarea id="msgInput" placeholder="Ketik pesan... (Gunakan Enter untuk baris baru)"></textarea></td>
+                <td><textarea id="judul" placeholder="Ketik pesan..."></textarea></td>
             </tr>
             <tr>
                 <td>TANGGAL</td>
                 <td>:</td>
-                <td><input type="date" id="dateInput"></td>
+                <td><input type="date" id="tanggal"></td>
             </tr>
         </table>
         
-        <button id="btn-save" onclick="handleSave()">SIMPAN PENGUMUMAN</button>
+        <button id="btn-save" onclick="simpanPengumuman()" style="padding:15px; background:#27ae60; color:white; border:none; width:100%; font-weight:bold; font-size:18px; cursor:pointer; border-radius: 8px;">SIMPAN PENGUMUMAN</button>
         
-        <div style="margin-top:30px;">
-            <strong style="font-family: sans-serif; font-size: 14px; color: #555;">DAFTAR PESAN AKTIF:</strong>
-            <div id="admin-list-container" style="margin-top:15px;"></div>
+        <div style="margin-top:25px;">
+            <strong style="font-family: sans-serif;">Daftar Pesan Aktif:</strong>
+            <div id="admin-manage-list" style="margin-top:10px;"></div>
         </div>
-        <p style="color:#aaa; font-size:11px; text-align:center; margin-top:25px;">Tekan <b>"H"</b> untuk Sembunyi/Muncul.</p>
+        <p style="color:#aaa; font-size:11px; text-align:center; margin-top:20px;">Tekan <b>"H"</b> untuk Sembunyi/Muncul.</p>
     </div>
 
     <div class="display-area">
@@ -102,118 +89,101 @@
     </div>
 
     <script>
-        const listWrapper = document.getElementById('list-wrapper');
-        const adminListContainer = document.getElementById('admin-list-container');
-        
-        let dataStore = JSON.parse(localStorage.getItem('ledData')) || [];
-        let currentFontSize = localStorage.getItem('ledFontSize') || "5";
-        let scrollPos = window.innerHeight;
+        let listWrapper = document.getElementById('list-wrapper');
+        let adminManageList = document.getElementById('admin-manage-list');
+        let dataPengumuman = JSON.parse(localStorage.getItem('ledData')) || [];
+        let savedFS = localStorage.getItem('ledFontSize') || "5";
+        let position = window.innerHeight;
 
-        function changeFontSize(val) {
+        function ubahFont(val) {
             document.getElementById('font-val').innerText = val;
-            currentFontSize = val;
             localStorage.setItem('ledFontSize', val);
-            renderDisplay();
+            renderAll();
         }
 
-        function renderDisplay() {
+        function renderAll() {
             listWrapper.innerHTML = '';
-            adminListContainer.innerHTML = '';
+            adminManageList.innerHTML = '';
+            let currentFS = localStorage.getItem('ledFontSize') || "5";
 
-            dataStore.forEach((item, index) => {
+            dataPengumuman.forEach((item, index) => {
                 // Tampilan LED
-                const li = document.createElement('li');
+                let li = document.createElement('li');
                 li.className = 'announcement-item';
-                li.innerHTML = `
-                    <div class="date-badge">${item.displayDate}</div>
-                    <div class="text-content" style="font-size: ${currentFontSize}rem">${item.text}</div>
-                `;
+                li.innerHTML = `<div class="date-badge">${item.tglDisplay}</div><div class="text-content" style="font-size:${currentFS}rem">${item.teks}</div>`;
                 listWrapper.appendChild(li);
 
                 // Tampilan Daftar Admin
-                const div = document.createElement('div');
+                let div = document.createElement('div');
                 div.className = 'admin-item';
                 div.innerHTML = `
-                    <div style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                        <strong>${index + 1}.</strong> ${item.text.replace(/\n/g, " ")}
-                    </div>
+                    <span style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.teks}</span>
                     <div>
-                        <button onclick="prepareEdit(${index})" style="background:#f39c12; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Edit</button>
-                        <button onclick="deleteItem(${index})" style="background:#e74c3c; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px; margin-left:5px;">✕</button>
+                        <button onclick="isiFormEdit(${index})" style="background:#f39c12; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Edit</button>
+                        <button onclick="hapusItem(${index})" style="background:#e74c3c; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px; margin-left:5px;">Hapus</button>
                     </div>
                 `;
-                adminListContainer.appendChild(div);
+                adminManageList.appendChild(div);
             });
-
-            if (dataStore.length === 0) {
-                listWrapper.innerHTML = `<li class="announcement-item"><div class="text-content" style="font-size:${currentFontSize}rem">BELUM ADA DATA</div></li>`;
-            }
         }
 
-        function handleSave() {
-            const textVal = document.getElementById('msgInput').value;
-            const dateVal = document.getElementById('dateInput').value;
-            const editIdx = document.getElementById('edit-index').value;
+        function simpanPengumuman() {
+            let judul = document.getElementById('judul').value;
+            let tanggal = document.getElementById('tanggal').value;
+            let editIndex = document.getElementById('edit-index').value;
 
-            if (!textVal || !dateVal) {
-                alert("Harap isi Pesan dan Tanggal!");
-                return;
-            }
+            if (!judul || !tanggal) return alert("Isi pesan dan tanggal!");
 
-            const d = new Date(dateVal);
-            const formattedDate = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            let d = new Date(tanggal);
+            let tglDisplay = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' });
 
-            const newItem = { text: textVal, rawDate: dateVal, displayDate: formattedDate };
-
-            if (editIdx === "-1") {
-                dataStore.push(newItem);
+            if (editIndex === "-1") {
+                dataPengumuman.push({ teks: judul, tglRaw: tanggal, tglDisplay: tglDisplay });
             } else {
-                dataStore[parseInt(editIdx)] = newItem;
+                dataPengumuman[editIndex] = { teks: judul, tglRaw: tanggal, tglDisplay: tglDisplay };
                 document.getElementById('edit-index').value = "-1";
                 document.getElementById('btn-save').innerText = "SIMPAN PENGUMUMAN";
                 document.getElementById('btn-save').style.background = "#27ae60";
             }
 
-            localStorage.setItem('ledData', JSON.stringify(dataStore));
-            document.getElementById('msgInput').value = '';
-            document.getElementById('dateInput').value = '';
-            renderDisplay();
+            localStorage.setItem('ledData', JSON.stringify(dataPengumuman));
+            document.getElementById('judul').value = '';
+            document.getElementById('tanggal').value = '';
+            renderAll();
         }
 
-        function prepareEdit(index) {
-            const item = dataStore[index];
-            document.getElementById('msgInput').value = item.text;
-            document.getElementById('dateInput').value = item.rawDate;
+        function isiFormEdit(index) {
+            let item = dataPengumuman[index];
+            document.getElementById('judul').value = item.teks;
+            document.getElementById('tanggal').value = item.tglRaw;
             document.getElementById('edit-index').value = index;
             document.getElementById('btn-save').innerText = "UPDATE PESAN";
             document.getElementById('btn-save').style.background = "#f39c12";
-            document.getElementById('msgInput').focus();
         }
 
-        function deleteItem(index) {
+        function hapusItem(index) {
             if(confirm("Hapus pesan ini?")) {
-                dataStore.splice(index, 1);
-                localStorage.setItem('ledData', JSON.stringify(dataStore));
-                renderDisplay();
+                dataPengumuman.splice(index, 1);
+                localStorage.setItem('ledData', JSON.stringify(dataPengumuman));
+                renderAll();
             }
         }
 
-        function startAnimation() {
-            scrollPos -= 1.8; 
-            if (scrollPos < -listWrapper.offsetHeight) scrollPos = window.innerHeight;
-            listWrapper.style.top = scrollPos + 'px';
-            requestAnimationFrame(startAnimation);
+        function animate() {
+            position -= 1.5; 
+            if (position < -listWrapper.offsetHeight) position = window.innerHeight;
+            listWrapper.style.top = position + 'px';
+            requestAnimationFrame(animate);
         }
 
         window.addEventListener('keydown', (e) => {
             if (e.key.toLowerCase() === 'h') document.getElementById('admin-panel').classList.toggle('hidden');
         });
 
-        // Init
-        document.getElementById('fontSlider').value = currentFontSize;
-        document.getElementById('font-val').innerText = currentFontSize;
-        renderDisplay();
-        startAnimation();
+        document.getElementById('fontSlider').value = savedFS;
+        document.getElementById('font-val').innerText = savedFS;
+        renderAll();
+        animate();
     </script>
 </body>
 </html>
