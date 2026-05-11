@@ -3,170 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mega LED Display</title>
+    <title>Mega LED Display - Editor Mode</title>
     <style>
         * { box-sizing: border-box; }
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #000;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #000;
             font-family: 'Arial Black', sans-serif;
         }
 
         /* Panel Admin */
         #admin-panel {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 9999;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
+            position: fixed; top: 20px; left: 20px; z-index: 9999;
+            background: white; padding: 20px; border-radius: 10px;
             box-shadow: 0 0 30px rgba(255,255,255,0.2);
+            max-height: 90vh; overflow-y: auto; width: 400px;
         }
         .hidden { display: none; }
 
-        /* Container Full Screen */
-        .display-area {
-            width: 100%;
-            height: 100vh;
-            position: relative;
-            padding: 0 5%;
+        /* Style Form & List di Admin */
+        .admin-list { margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px; }
+        .admin-item { 
+            display: flex; justify-content: space-between; align-items: center;
+            background: #f9f9f9; padding: 8px; margin-bottom: 5px;
+            border-radius: 4px; font-family: sans-serif; font-size: 13px;
         }
+        .btn-edit { background: #f39c12; color: white; border: none; padding: 5px; cursor: pointer; border-radius: 3px; }
+        .btn-del { background: #e74c3c; color: white; border: none; padding: 5px; cursor: pointer; border-radius: 3px; }
 
-        /* List Pengumuman yang Bergerak */
-        #list-wrapper {
-            position: absolute;
-            width: 90%;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-            top: 100%; /* Mulai dari bawah layar */
-        }
-
-        .announcement-item {
-            padding: 40px 0;
-            border-bottom: 2px solid #333;
-            color: #fff;
-            display: flex;
-            flex-direction: column; /* Tanggal di atas, teks di bawah */
-            gap: 10px;
-        }
-
-        .date-badge {
-            background: #ff4757;
-            color: white;
-            padding: 5px 20px;
-            font-size: 1.8rem;
-            width: fit-content;
-            border-radius: 5px;
-        }
-
-        .text-content {
-            font-size: 4.5rem; /* Ukuran teks raksasa */
-            line-height: 1.2;
-            text-transform: uppercase;
-            color: #ffcc00; /* Warna kuning khas LED */
-        }
-
-        .instruction {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            color: #333;
-            font-size: 12px;
-        }
+        /* Tampilan Utama LED */
+        .display-area { width: 100%; height: 100vh; position: relative; padding: 0 5%; }
+        #list-wrapper { position: absolute; width: 90%; margin: 0; padding: 0; list-style: none; top: 100%; }
+        .announcement-item { padding: 40px 0; border-bottom: 2px solid #333; color: #fff; display: flex; flex-direction: column; gap: 10px; }
+        .date-badge { background: #ff4757; color: white; padding: 5px 20px; font-size: 1.8rem; width: fit-content; border-radius: 5px; }
+        .text-content { font-size: 4.5rem; line-height: 1.2; text-transform: uppercase; color: #ffcc00; }
     </style>
 </head>
 <body>
 
     <div id="admin-panel">
-        <h2 style="margin:0 0 10px 0">Input LED</h2>
-        <input type="text" id="judul" placeholder="Isi Pengumuman..." style="padding:10px; width:300px; font-size:16px">
-        <input type="date" id="tanggal" style="padding:10px; font-size:16px">
-        <button onclick="tambahPengumuman()" style="padding:10px 20px; background:#27ae60; color:white; border:none; font-weight:bold; cursor:pointer">TAMBAH</button>
-        <button onclick="hapusSemua()" style="padding:10px; background:#c0392b; color:white; border:none; cursor:pointer">RESET</button>
-        <p style="color:#666; font-size:12px">Tekan <b>"H"</b> untuk sembunyi/munculkan panel ini.</p>
+        <h2 style="margin:0 0 10px 0">Control Panel</h2>
+        <input type="hidden" id="edit-index" value="-1">
+        <input type="text" id="judul" placeholder="Isi Pengumuman..." style="padding:10px; width:100%; margin-bottom:5px;">
+        <input type="date" id="tanggal" style="padding:10px; width:100%; margin-bottom:10px;">
+        
+        <button id="btn-save" onclick="simpanPengumuman()" style="padding:10px; background:#27ae60; color:white; border:none; width:100%; font-weight:bold; cursor:pointer">TAMBAH PENGUMUMAN</button>
+        
+        <div class="admin-list" id="admin-manage-list">
+            </div>
+
+        <p style="color:#666; font-size:11px; margin-top:15px;">Tekan <b>"H"</b> untuk Sembunyi/Muncul.</p>
     </div>
 
     <div class="display-area">
-        <ul id="list-wrapper">
-            </ul>
+        <ul id="list-wrapper"></ul>
     </div>
-
-    <div class="instruction">Tekan 'H' untuk Menu</div>
 
     <script>
         let listWrapper = document.getElementById('list-wrapper');
+        let adminManageList = document.getElementById('admin-manage-list');
         let dataPengumuman = JSON.parse(localStorage.getItem('ledData')) || [];
         let position = window.innerHeight;
         let animationId;
 
-        function renderData() {
+        function renderAll() {
+            // Render untuk Tampilan LED
             listWrapper.innerHTML = '';
+            // Render untuk Daftar Kelola di Admin Panel
+            adminManageList.innerHTML = '<strong>Kelola Pesan:</strong><br>';
+
             if (dataPengumuman.length === 0) {
-                listWrapper.innerHTML = `<li class="announcement-item"><div class="text-content">STANDBY - BELUM ADA PENGUMUMAN</div></li>`;
-                return;
+                listWrapper.innerHTML = `<li class="announcement-item"><div class="text-content">STANDBY - BELUM ADA DATA</div></li>`;
             }
-            dataPengumuman.forEach(item => {
+
+            dataPengumuman.forEach((item, index) => {
+                // Ke LED
                 let li = document.createElement('li');
                 li.className = 'announcement-item';
-                li.innerHTML = `
-                    <div class="date-badge">${item.tgl}</div>
-                    <div class="text-content">${item.teks}</div>
-                `;
+                li.innerHTML = `<div class="date-badge">${item.tglDisplay}</div><div class="text-content">${item.teks}</div>`;
                 listWrapper.appendChild(li);
+
+                // Ke Admin Panel
+                let div = document.createElement('div');
+                div.className = 'admin-item';
+                div.innerHTML = `
+                    <span style="overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:200px;">${item.teks}</span>
+                    <div>
+                        <button class="btn-edit" onclick="isiFormEdit(${index})">✎</button>
+                        <button class="btn-del" onclick="hapusItem(${index})">✕</button>
+                    </div>
+                `;
+                adminManageList.appendChild(div);
             });
-            // Reset posisi ke bawah saat ada data baru
-            position = window.innerHeight;
         }
 
-        function tambahPengumuman() {
+        function simpanPengumuman() {
             let judul = document.getElementById('judul').value;
             let tanggal = document.getElementById('tanggal').value;
-            if (!judul || !tanggal) return;
+            let editIndex = document.getElementById('edit-index').value;
+
+            if (!judul || !tanggal) return alert("Isi data dulu!");
 
             let d = new Date(tanggal);
-            let dateString = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            let tglDisplay = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' });
 
-            dataPengumuman.push({ teks: judul, tgl: dateString });
+            if (editIndex === "-1") {
+                // Tambah baru
+                dataPengumuman.push({ teks: judul, tglRaw: tanggal, tglDisplay: tglDisplay });
+            } else {
+                // Update yang ada
+                dataPengumuman[editIndex] = { teks: judul, tglRaw: tanggal, tglDisplay: tglDisplay };
+                document.getElementById('edit-index').value = "-1";
+                document.getElementById('btn-save').innerText = "TAMBAH PENGUMUMAN";
+                document.getElementById('btn-save').style.background = "#27ae60";
+            }
+
             localStorage.setItem('ledData', JSON.stringify(dataPengumuman));
+            resetForm();
+            renderAll();
+        }
+
+        function isiFormEdit(index) {
+            let item = dataPengumuman[index];
+            document.getElementById('judul').value = item.teks;
+            document.getElementById('tanggal').value = item.tglRaw;
+            document.getElementById('edit-index').value = index;
+            document.getElementById('btn-save').innerText = "SIMPAN PERUBAHAN";
+            document.getElementById('btn-save').style.background = "#f39c12";
+            document.getElementById('judul').focus();
+        }
+
+        function hapusItem(index) {
+            if(confirm("Hapus pesan ini?")) {
+                dataPengumuman.splice(index, 1);
+                localStorage.setItem('ledData', JSON.stringify(dataPengumuman));
+                renderAll();
+            }
+        }
+
+        function resetForm() {
             document.getElementById('judul').value = '';
-            renderData();
+            document.getElementById('tanggal').value = '';
         }
 
-        function hapusSemua() {
-            if(confirm("Hapus semua?")) {
-                dataPengumuman = [];
-                localStorage.removeItem('ledData');
-                renderData();
-            }
-        }
-
-        // Animasi Smooth Scroll Ke Atas
         function animate() {
-            position -= 2; // Kecepatan gulung (naikkan angka untuk lebih cepat)
-            
-            // Jika semua teks sudah lewat ke atas, balik lagi ke bawah
-            if (position < -listWrapper.offsetHeight) {
-                position = window.innerHeight;
-            }
-            
+            position -= 2; 
+            if (position < -listWrapper.offsetHeight) { position = window.innerHeight; }
             listWrapper.style.top = position + 'px';
             animationId = requestAnimationFrame(animate);
         }
 
         window.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'h') {
-                document.getElementById('admin-panel').classList.toggle('hidden');
-            }
+            if (e.key.toLowerCase() === 'h') document.getElementById('admin-panel').classList.toggle('hidden');
         });
 
-        renderData();
-        animate(); // Jalankan animasi
+        renderAll();
+        animate();
     </script>
 </body>
 </html>
