@@ -2,52 +2,79 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Display Pengumuman Running</title>
     <style>
-        /* Kontainer Utama */
-        .announcement-box {
-            width: 350px;
-            height: 50px; /* Tinggi tampilan satu baris */
-            background: #2c3e50;
-            color: white;
-            overflow: hidden; /* Menyembunyikan teks yang di luar box */
-            border-radius: 8px;
-            font-family: Arial, sans-serif;
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Wrapper untuk daftar pengumuman */
+        /* Kontainer Utama */
+        .announcement-box {
+            width: 100%;
+            max-width: 600px;
+            height: 60px; 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+            border-left: 8px solid #ffcc00; /* Aksen warna emas */
+        }
+
+        /* Wrapper List */
         .announcement-list {
             position: absolute;
             width: 100%;
             margin: 0;
             padding: 0;
             list-style: none;
-            animation: scrollUp 10s infinite; /* Durasi total animasi */
+            animation: scrollUp 12s infinite ease-in-out;
         }
 
         .announcement-list li {
-            height: 50px; /* Harus sama dengan tinggi kontainer */
+            height: 60px;
             display: flex;
             align-items: center;
-            font-weight: bold;
+            padding: 0 20px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            white-space: nowrap;
         }
 
-        /* Animasi Gulung Ke Atas */
+        /* Animasi Lembut */
         @keyframes scrollUp {
-            0%, 20% { top: 0; }             /* Pengumuman 1 */
-            25%, 45% { top: -50px; }        /* Pengumuman 2 */
-            50%, 70% { top: -100px; }       /* Pengumuman 3 */
-            75%, 95% { top: -150px; }       /* Pengumuman 4 */
-            100% { top: 0; }                /* Kembali ke awal */
+            0%, 20% { top: 0; }
+            25%, 45% { top: -60px; }
+            50%, 70% { top: -120px; }
+            75%, 95% { top: -180px; }
+            100% { top: 0; }
         }
 
-        /* Opsional: Berhenti saat kursor diarahkan (hover) */
+        /* Hover effect */
         .announcement-box:hover .announcement-list {
             animation-play-state: paused;
+            cursor: pointer;
+        }
+
+        /* Tambahan Label di Depan (Opsional) */
+        .label-flash {
+            display: inline-block;
+            background: #ff4757;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-right: 10px;
+            text-transform: uppercase;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.7; }
         }
     </style>
 </head>
@@ -55,10 +82,10 @@
 
     <div class="announcement-box">
         <ul class="announcement-list">
-            <li>📢 Pendaftaran Siswa Baru Telah Dibuka!</li>
-            <li>🚀 Update Sistem Versi 2.0 Selesai Malam Ini</li>
-            <li>⚠️ Libur Nasional: Kantor Tutup 17 Agustus</li>
-            <li>💡 Tips: Gunakan Masker Saat Keluar Rumah</li>
+            <li><span class="label-flash">Info</span> 📢 Pendaftaran Siswa Baru Telah Dibuka!</li>
+            <li><span class="label-flash">Update</span> 🚀 Update Sistem Versi 2.0 Selesai Malam Ini</li>
+            <li><span class="label-flash">Penting</span> ⚠️ Libur Nasional: Kantor Tutup 17 Agustus</li>
+            <li><span class="label-flash">Tips</span> 💡 Gunakan Masker Saat Keluar Rumah</li>
         </ul>
     </div>
 
