@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Display Pengumuman Running</title>
+    <style>
+        /* Kontainer Utama */
+        .announcement-box {
+            width: 350px;
+            height: 50px; /* Tinggi tampilan satu baris */
+            background: #2c3e50;
+            color: white;
+            overflow: hidden; /* Menyembunyikan teks yang di luar box */
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+        }
+
+        /* Wrapper untuk daftar pengumuman */
+        .announcement-list {
+            position: absolute;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            animation: scrollUp 10s infinite; /* Durasi total animasi */
+        }
+
+        .announcement-list li {
+            height: 50px; /* Harus sama dengan tinggi kontainer */
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        /* Animasi Gulung Ke Atas */
+        @keyframes scrollUp {
+            0%, 20% { top: 0; }             /* Pengumuman 1 */
+            25%, 45% { top: -50px; }        /* Pengumuman 2 */
+            50%, 70% { top: -100px; }       /* Pengumuman 3 */
+            75%, 95% { top: -150px; }       /* Pengumuman 4 */
+            100% { top: 0; }                /* Kembali ke awal */
+        }
+
+        /* Opsional: Berhenti saat kursor diarahkan (hover) */
+        .announcement-box:hover .announcement-list {
+            animation-play-state: paused;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="announcement-box">
+        <ul class="announcement-list">
+            <li>📢 Pendaftaran Siswa Baru Telah Dibuka!</li>
+            <li>🚀 Update Sistem Versi 2.0 Selesai Malam Ini</li>
+            <li>⚠️ Libur Nasional: Kantor Tutup 17 Agustus</li>
+            <li>💡 Tips: Gunakan Masker Saat Keluar Rumah</li>
+        </ul>
+    </div>
+
+</body>
+</html>
