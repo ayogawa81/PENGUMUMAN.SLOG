@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mega LED Display Pro</title>
+    <title>Mega LED Display Pro - Fixed</title>
     <style>
         * { box-sizing: border-box; }
         body, html {
@@ -21,9 +21,9 @@
         }
         .hidden { display: none; }
 
-        /* Tabel Input */
+        /* Tabel Input agar Titik Dua Rapi */
         .input-table { width: 100%; margin-bottom: 15px; border-collapse: collapse; }
-        .input-table td { padding: 10px 5px; font-family: 'Segoe UI', sans-serif; font-weight: bold; color: #333; }
+        .input-table td { padding: 10px 5px; font-family: sans-serif; font-weight: bold; color: #333; }
         .input-table input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; font-weight: bold; }
 
         /* List Kelola di Admin */
@@ -31,7 +31,7 @@
             display: flex; justify-content: space-between; align-items: center;
             background: #f8f9fa; padding: 12px; margin-bottom: 8px;
             border-left: 5px solid #27ae60; border-radius: 4px; 
-            font-family: sans-serif; font-size: 14px;
+            font-family: sans-serif; font-size: 14px; color: #333;
         }
         .btn-edit { background: #f39c12; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; }
         .btn-del { background: #e74c3c; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-left: 5px; }
@@ -42,10 +42,8 @@
         
         .announcement-item { padding: 60px 0; border-bottom: 3px solid #222; display: flex; flex-direction: column; gap: 20px; }
         
-        /* PEWARNAAN BERBEDA (ZEBRA) */
-        /* Pesan Ganjil: Kuning */
+        /* PEWARNAAN ZEBRA */
         .announcement-item:nth-child(odd) .text-content { color: #ffcc00; } 
-        /* Pesan Genap: Cyan/Biru Muda */
         .announcement-item:nth-child(even) .text-content { color: #00eaff; } 
 
         .date-badge { background: #ff4757; color: white; padding: 8px 30px; font-size: 2.5rem; width: fit-content; border-radius: 10px; }
@@ -55,7 +53,7 @@
 <body>
 
     <div id="admin-panel">
-        <h2 style="margin:0 0 20px 0; font-family: sans-serif; color: #2c3e50;">Control Panel LED</h2>
+        <h2 style="margin:0 0 20px 0; font-family: sans-serif;">Control Panel LED</h2>
         
         <input type="hidden" id="edit-index" value="-1">
         
@@ -63,20 +61,21 @@
             <tr>
                 <td width="150">PENGUMUMAN</td>
                 <td width="20">:</td>
-                <td><input type="text" id="judul" placeholder="Ketik isi pengumuman..."></td>
+                <td><input type="text" id="judulInput" placeholder="Ketik isi pengumuman..."></td>
             </tr>
             <tr>
                 <td>TANGGAL</td>
                 <td>:</td>
-                <td><input type="date" id="tanggal"></td>
+                <td><input type="date" id="tanggalInput"></td>
             </tr>
         </table>
         
-        <button id="btn-save" onclick="simpanPengumuman()" style="padding:15px; background:#27ae60; color:white; border:none; width:100%; font-weight:bold; font-size:18px; cursor:pointer; border-radius: 8px; transition: 0.3s;">TAMBAH PENGUMUMAN</button>
+        <button id="btn-save" onclick="simpanPengumuman()" style="padding:15px; background:#27ae60; color:white; border:none; width:100%; font-weight:bold; font-size:18px; cursor:pointer; border-radius: 8px;">TAMBAH PENGUMUMAN</button>
         
         <div style="margin-top:30px;">
             <strong style="font-family: sans-serif; color: #555;">DAFTAR PESAN AKTIF:</strong>
-            <div id="admin-manage-list" style="margin-top:15px;"></div>
+            <div id="admin-manage-list" style="margin-top:15px;">
+                </div>
         </div>
 
         <p style="color:#aaa; font-size:12px; margin-top:25px; text-align:center; font-family: sans-serif;">
@@ -91,6 +90,8 @@
     <script>
         let listWrapper = document.getElementById('list-wrapper');
         let adminManageList = document.getElementById('admin-manage-list');
+        
+        // Ambil data dari storage
         let dataPengumuman = JSON.parse(localStorage.getItem('ledData')) || [];
         let position = window.innerHeight;
 
@@ -99,16 +100,13 @@
             adminManageList.innerHTML = '';
 
             dataPengumuman.forEach((item, index) => {
-                // Tambah ke Layar LED
+                // Ke Layar LED
                 let li = document.createElement('li');
                 li.className = 'announcement-item';
-                li.innerHTML = `
-                    <div class="date-badge">${item.tglDisplay}</div>
-                    <div class="text-content">${item.teks}</div>
-                `;
+                li.innerHTML = `<div class="date-badge">${item.tglDisplay}</div><div class="text-content">${item.teks}</div>`;
                 listWrapper.appendChild(li);
 
-                // Tambah ke Daftar Kelola Admin
+                // Ke Panel Admin (List Kelola)
                 let div = document.createElement('div');
                 div.className = 'admin-item';
                 div.innerHTML = `
@@ -129,6 +127,73 @@
         }
 
         function simpanPengumuman() {
-            let judul = document.getElementById('judul').value;
-            let tanggal = document.getElementById('tanggal').value;
-            let editIndex = document.getElementById('edit-
+            let judul = document.getElementById('judulInput').value;
+            let tanggal = document.getElementById('tanggalInput').value;
+            let editIndex = document.getElementById('edit-index').value;
+
+            if (!judul || !tanggal) {
+                alert("Harap isi pesan dan tanggal!");
+                return;
+            }
+
+            let d = new Date(tanggal);
+            let tglDisplay = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' });
+
+            if (editIndex === "-1") {
+                // Mode Tambah Baru
+                dataPengumuman.push({ teks: judul, tglRaw: tanggal, tglDisplay: tglDisplay });
+            } else {
+                // Mode Update/Edit
+                dataPengumuman[parseInt(editIndex)] = { teks: judul, tglRaw: tanggal, tglDisplay: tglDisplay };
+                document.getElementById('edit-index').value = "-1";
+                document.getElementById('btn-save').innerText = "TAMBAH PENGUMUMAN";
+                document.getElementById('btn-save').style.background = "#27ae60";
+            }
+
+            localStorage.setItem('ledData', JSON.stringify(dataPengumuman));
+            
+            // Reset Input
+            document.getElementById('judulInput').value = '';
+            document.getElementById('tanggalInput').value = '';
+            
+            renderAll();
+        }
+
+        function isiFormEdit(index) {
+            let item = dataPengumuman[index];
+            document.getElementById('judulInput').value = item.teks;
+            document.getElementById('tanggalInput').value = item.tglRaw;
+            document.getElementById('edit-index').value = index;
+            document.getElementById('btn-save').innerText = "SIMPAN PERUBAHAN";
+            document.getElementById('btn-save').style.background = "#f39c12";
+        }
+
+        function hapusItem(index) {
+            if(confirm("Hapus pengumuman ini?")) {
+                dataPengumuman.splice(index, 1);
+                localStorage.setItem('ledData', JSON.stringify(dataPengumuman));
+                renderAll();
+            }
+        }
+
+        function animate() {
+            position -= 1.8; // Kecepatan gerak
+            if (position < -listWrapper.offsetHeight) {
+                position = window.innerHeight;
+            }
+            listWrapper.style.top = position + 'px';
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'h') {
+                document.getElementById('admin-panel').classList.toggle('hidden');
+            }
+        });
+
+        // Jalankan saat pertama kali buka
+        renderAll();
+        animate();
+    </script>
+</body>
+</html>
