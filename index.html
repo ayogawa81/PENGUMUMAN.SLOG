@@ -228,29 +228,36 @@
             }
         }
 
-        // UPDATE UTAMA: Menggunakan API ResponsiveVoice (Sangat Stabil, Mendukung Tizen & PC tanpa terhambat CORS)
-        function panggilSuaraAI(teks) {
-            if (!tizenAudioValid) {
-                console.warn("Izin audio belum dibuka oleh operator TV!");
-                return;
-            }
+     // SOLUSI ALTERNATIF JIKA RESPONSIVEVOICE DIBLOKIR / INTERNET KURANG STABIL
+function panggilSuaraAI(teks) {
+    if (!tizenAudioValid) {
+        console.warn("Izin audio belum dibuka oleh operator TV!");
+        return;
+    }
 
-            try {
-                console.log("Memulai TTS: " + teks);
-                
-                // Eksekusi pemanggilan suara bahasa Indonesia wanita (Indonesian Female)
-                responsiveVoice.speak(teks, "Indonesian Female", {
-                    pitch: 1,       // Nada normal
-                    rate: 0.9,      // Kecepatan sedikit santai agar pengumuman terdengar jelas di ruangan luas
-                    volume: 1,      // Volume maksimal
-                    onerror: (err) => {
-                        console.error("Gagal memproses pengumuman suara:", err);
-                    }
-                });
-            } catch (error) {
-                console.error("Error pada engine ResponsiveVoice:", error);
-            }
+    try {
+        console.log("Memulai TTS Lokal: " + teks);
+        
+        // Membatalkan antrean suara lama agar tidak macet/menumpuk
+        window.speechSynthesis.cancel(); 
+
+        const speech = new SpeechSynthesisUtterance(teks);
+        speech.lang = 'id-ID'; // Mengunci ke bahasa Indonesia
+        speech.rate = 0.9;     // Kecepatan membaca
+        speech.pitch = 1;      // Nada suara
+
+        // Cari suara bahasa Indonesia yang tertanam di sistem TV
+        const voices = window.speechSynthesis.getVoices();
+        const indonesianVoice = voices.find(voice => voice.lang.includes('id') || voice.lang.includes('ID'));
+        if (indonesianVoice) {
+            speech.voice = indonesianVoice;
         }
+
+        window.speechSynthesis.speak(speech);
+    } catch (error) {
+        console.error("Error pada engine Web Speech API Lokal:", error);
+    }
+}
 
         async function loadDataFromCloud() {
             try {
