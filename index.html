@@ -134,6 +134,9 @@
         let currentHours = "00";
         let currentMinutes = "00";
         let editIndex = -1; // -1 berarti mode tambah, jika >= 0 berarti mode edit
+        
+        // Memori pengingat agar AI hanya mengumumkan kegiatan satu kali saja per sesi dimulai
+        let spokenSchedules = new Set();
 
         // JAM REALTIME
         function updateDateTime() {
@@ -149,6 +152,65 @@
 
                 updateStatusBadges(currentHours, currentMinutes);
             } catch(err) { console.error(err); }
+        }
+
+        // FUNGSI BUNYI BEEP SINTETIS (Murni Kode Audio, Tanpa Perlu File Mp3 External)
+        function playBeepSound(callback) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                function pembuatBeep(waktuMulai, frekuensi, durasi) {
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = frekuensi; 
+                    
+                    gainNode.gain.setValueAtTime(0.3, waktuMulai);
+                    gainNode.gain.exponentialRampToValueAtTime(0.00001, waktuMulai + durasi);
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    
+                    oscillator.start(waktuMulai);
+                    oscillator.stop(waktuMulai + durasi);
+                }
+                
+                // Beep pertama (Nada Tinggi)
+                pembuatBeep(audioCtx.currentTime, 880, 0.15);
+                // Beep kedua (Nada Lebih Tinggi setelah jeda 0.2 detik)
+                pembuatBeep(audioCtx.currentTime + 0.2, 1046.5, 0.2);
+                
+                // Jalankan fungsi pengumuman AI setelah suara beep selesai berbunyi
+                setTimeout(() => {
+                    if (callback) callback();
+                }, 500);
+            } catch (e) {
+                console.error("Gagal membunyikan beep audio: ", e);
+                if (callback) callback();
+            }
+        }
+
+        // FUNGSI SUARA AI SUARA PEREMPUAN/LAKI BAHASA INDONESIA
+        function panggilSuaraAI(teks) {
+            if ('speechSynthesis' in window) {
+                // Batalkan suara sebelumnya jika sedang antre agar tidak tumpang tindih
+                window.speechSynthesis.cancel(); 
+
+                const ucapan = new SpeechSynthesisUtterance(teks);
+                ucapan.lang = 'id-ID'; // Set bahasa Indonesia resmi
+                ucapan.pitch = 1.0;    // Intonasi normal
+                ucapan.rate = 0.9;     // Kecepatan membaca sedikit diperlambat agar jelas terdengar
+
+                // Cari dan optimalkan ke modul suara lokal Bahasa Indonesia jika tersedia di sistem
+                const semuaSuara = window.speechSynthesis.getVoices();
+                const suaraIndo = semuaSuara.find(voice => voice.lang.includes('id-ID') || voice.lang.includes('id_ID'));
+                if (suaraIndo) ucapan.voice = suaraIndo;
+
+                window.speechSynthesis.speak(ucapan);
+            } else {
+                console.warn("Browser ini tidak mendukung fitur Suara AI (Text-to-Speech).");
+            }
         }
 
         // BACA DATA DARI CLOUD
@@ -241,13 +303,11 @@
             document.getElementById('inputKegiatan').value = item.kegiatan || '';
             document.getElementById('inputLokasi').value = item.lokasi || '';
             
-            // Set index yang sedang diedit dan ubah tampilan tombol utama
             editIndex = index;
             const btnAdd = document.getElementById('btnAdd');
             btnAdd.textContent = "💾 Simpan Perubahan";
             btnAdd.style.backgroundColor = "#f39c12";
             
-            // Scroll ke arah form input di dalam modal agar operator fokus
             document.querySelector('.modal-content').scrollTop = 0;
         }
 
@@ -266,19 +326,20 @@
             btnAdd.disabled = true;
 
             if (editIndex === -1) {
-                // Mode Tambah Jadwal Baru
                 systemSchedules.push({ hariTgl, waktu, kegiatan, lokasi });
             } else {
-                // Mode Update Jadwal yang Sudah Ada
+                // Jika data diedit, hapus ID dari memori suara agar jika jam diubah, ia bisa berbunyi lagi
+                const uniqueKey = `${hariTgl}-${waktu}-${kegiatan}`;
+                spokenSchedules.delete(uniqueKey);
+
                 systemSchedules[editIndex] = { hariTgl, waktu, kegiatan, lokasi };
-                editIndex = -1; // Reset kembali ke mode tambah
+                editIndex = -1;
                 btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
                 btnAdd.style.backgroundColor = "#10b981";
             }
 
             renderSchedules(true);
 
-            // Bersihkan form input kembali kosong
             document.getElementById('inputHariTgl').value = '';
             document.getElementById('inputWaktu').value = '';
             document.getElementById('inputKegiatan').value = '';
@@ -288,7 +349,6 @@
 
         function deleteSchedule(index) {
             if (confirm("Hapus jadwal ini?")) {
-                // Jika sedang mengedit jadwal yang dihapus, reset status form ke tambah baru
                 if (editIndex === index) {
                     editIndex = -1;
                     const btnAdd = document.getElementById('btnAdd');
@@ -304,7 +364,7 @@
             }
         }
 
-        // HITUNG STATUS BADGE OTOMATIS (VERSI AMAN & ANTI-CRASH)
+        // HITUNG STATUS BADGE OTOMATIS & PICU AUDIO AI
         function updateStatusBadges(currentHour, currentMinute) {
             const now = new Date();
             const hariIniMurni = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -315,6 +375,8 @@
                     if (!timeRange || !timeRange.includes('-')) return;
 
                     const colTimeText = row.querySelector('.col-time div').textContent || '';
+                    const eventName = row.querySelector('.col-event').textContent || '';
+                    const roomName = row.querySelector('.col-room').textContent || '';
                     const badge = row.querySelector('.status-badge');
                     if (!badge) return;
 
@@ -368,6 +430,18 @@
                     } else if (waktuSekarangLengkap >= waktuMulaiLengkap && waktuSekarangLengkap <= waktuSelesaiLengkap) {
                         badge.textContent = 'Berlangsung';
                         badge.className = 'status-badge status-ongoing';
+
+                        // LOGIKA PEMICU SUARA AI (DILAKUKAN SEKALI SAJA SAAT BERGANTI STATUS)
+                        const uniqueKey = `${colTimeText}-${timeRange}-${eventName}`;
+                        if (!spokenSchedules.has(uniqueKey)) {
+                            spokenSchedules.add(uniqueKey); // Kunci agar tidak bersuara lagi di detik berikutnya
+                            
+                            // Eksekusi Beep lalu panggil teks AI
+                            playBeepSound(() => {
+                                const teksPengumuman = `Perhatian, kegiatan ${eventName} di lokasi ${roomName} sedang berlangsung.`;
+                                panggilSuaraAI(teksPengumuman);
+                            });
+                        }
                     } else {
                         badge.textContent = 'Menunggu';
                         badge.className = 'status-badge status-waiting';
@@ -385,7 +459,6 @@
         }
         
         function toggleModal(show) { 
-            // Jika modal ditutup, reset paksa form dari mode edit ke mode tambah biasa
             if (!show && editIndex !== -1) {
                 editIndex = -1;
                 const btnAdd = document.getElementById('btnAdd');
@@ -399,12 +472,20 @@
             document.getElementById('settingModal').classList.toggle('active', show); 
         }
 
+        // PENTING: Ketentuan keamanan Google Chrome/Edge mewajibkan interaksi user (klik layar pertama kali) 
+        // agar audio browser diizinkan menyala secara otomatis demi menghindari spam audio iklan otomatis.
+        window.addEventListener('click', () => {
+            // Memancing aktivasi AudioContext saat pertama kali admin mengklik area mana saja di layar
+            const dummyCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(dummyCtx.state === 'suspended') dummyCtx.resume();
+        }, { once: true });
+
         // EKSEKUSI INTERVAL JALAN UTAMA
         setInterval(updateDateTime, 1000);
         updateDateTime();
         loadDataFromCloud();
 
-        // Singkronisasi background tiap 5 detik
+        // Sinkronisasi database tiap 5 detik
         setInterval(loadDataFromCloud, 5000);
     </script>
 </body>
