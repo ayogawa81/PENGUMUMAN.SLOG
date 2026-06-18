@@ -3,187 +3,409 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mega LED Display - Stable Version</title>
+    <title>Display Jadwal Kegiatan Online Synchronized</title>
     <style>
-        * { box-sizing: border-box; }
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background-color: #000;
-            font-family: 'Arial Black', sans-serif;
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        /* Panel Admin */
-        #admin-panel {
-            position: fixed; top: 20px; left: 20px; z-index: 9999;
-            background: white; padding: 25px; border-radius: 12px;
-            box-shadow: 0 0 40px rgba(255,255,255,0.3);
-            width: 500px; max-height: 90vh; overflow-y: auto;
+        body {
+            background-color: #0f172a; color: #f8fafc; height: 100vh;
+            display: flex; flex-direction: column; overflow: hidden; position: relative;
         }
-        .hidden { display: none; }
+        header {
+            background: linear-gradient(90deg, #1e3a8a, #0f172a);
+            padding: 20px 40px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 4px solid #3b82f6;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .logo-title h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; color: #ffffff; text-transform: uppercase; }
+        .logo-title p { color: #94a3b8; font-size: 1.1rem; margin-top: 5px; }
+        .datetime-container {
+            text-align: right; background: rgba(30, 41, 59, 0.7);
+            padding: 10px 20px; border-radius: 12px; border: 1px solid #334155;
+            display: flex; align-items: center; gap: 20px;
+        }
+        #clock { font-size: 2.5rem; font-weight: bold; color: #3b82f6; font-variant-numeric: tabular-nums; line-height: 1; }
+        #date { font-size: 1.1rem; color: #cbd5e1; margin-top: 5px; font-weight: 500; }
+        .btn-setting {
+            background-color: #334155; color: #f8fafc; border: 1px solid #475569;
+            padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;
+        }
+        .btn-setting:hover { background-color: #3b82f6; border-color: #3b82f6; }
+        main { flex: 1; padding: 40px; display: flex; flex-direction: column; }
+        .table-container {
+            width: 100%; background-color: #1e293b; border-radius: 16px;
+            overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); border: 1px solid #334155;
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #0f172a; color: #3b82f6; font-size: 1.4rem; font-weight: 700; padding: 20px 25px; text-transform: uppercase; border-bottom: 3px solid #334155; }
+        td { padding: 22px 25px; font-size: 1.3rem; color: #e2e8f0; border-bottom: 1px solid #334155; vertical-align: middle; }
+        tr:nth-child(even) { background-color: #1e293b; }
+        tr:nth-child(odd) { background-color: #162238; }
+        .col-time { font-weight: bold; color: #f59e0b; width: 25%; }
+        .col-event { width: 40%; font-weight: 500; }
+        .col-room { width: 20%; color: #cbd5e1; }
+        .status-badge { display: inline-block; padding: 6px 16px; border-radius: 30px; font-size: 1rem; font-weight: bold; text-transform: uppercase; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .status-ongoing { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
+        .status-waiting { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+        .status-done { background-color: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
 
-        /* Tabel Input agar Sejajar */
-        .input-table { width: 100%; margin-bottom: 15px; border-collapse: collapse; }
-        .input-table td { padding: 8px 5px; font-family: sans-serif; font-weight: bold; vertical-align: top; }
+        /* MODAL PANEL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.75);
+            display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: all 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content { background-color: #1e293b; width: 90%; max-width: 650px; max-height: 90vh; border-radius: 16px; border: 1px solid #475569; padding: 25px; display: flex; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .modal-header h2 { font-size: 1.5rem; color: #3b82f6; }
+        .btn-close { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; }
         
-        textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; min-height: 100px; font-family: sans-serif; }
-        input[type="date"] { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
-
-        .slider-box { background: #f0f2f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-family: sans-serif; }
-
-        /* List Kelola */
-        .admin-item { 
-            display: flex; justify-content: space-between; align-items: center;
-            background: #f1f1f1; padding: 10px; margin-bottom: 8px;
-            border-radius: 6px; font-family: sans-serif; font-size: 14px;
-        }
-
-        /* Area LED */
-        .display-area { width: 100%; height: 100vh; position: relative; }
-        #list-wrapper { position: absolute; width: 100%; margin: 0; padding: 0 50px; list-style: none; top: 100%; }
-        .announcement-item { padding: 50px 0; border-bottom: 2px solid #222; display: flex; flex-direction: column; gap: 15px; }
-        
-        /* Warna Bergantian */
-        .announcement-item:nth-child(odd) .text-content { color: #ffcc00; } 
-        .announcement-item:nth-child(even) .text-content { color: #00e5ff; } 
-
-        .date-badge { background: #ff4757; color: white; padding: 5px 25px; font-size: 2rem; width: fit-content; border-radius: 8px; }
-        .text-content { line-height: 1.1; text-transform: uppercase; text-shadow: 4px 4px 0px #000; white-space: pre-line; }
+        .form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-group input { background-color: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 12px; border-radius: 6px; font-size: 1rem; width: 100%; }
+        .btn-add { background-color: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 20px; font-size: 1rem; }
+        .btn-add:disabled { background-color: #475569; cursor: not-allowed; }
+        .schedule-manager-list { flex: 1; overflow-y: auto; border-top: 1px solid #334155; padding-top: 15px; }
+        .manager-item { display: flex; justify-content: space-between; align-items: center; background-color: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #2d3748; gap: 10px; }
+        .manager-item-text { font-size: 0.95rem; color: #cbd5e1; flex: 1; }
+        .btn-delete { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="admin-panel">
-        <h2 style="margin:0 0 20px 0; font-family: sans-serif;">Control Panel LED</h2>
-        
-        <div class="slider-box">
-            <label>Ukuran Huruf: <span id="font-val">5</span>rem</label>
-            <input type="range" min="1" max="15" step="0.5" value="5" style="width:100%" id="fontSlider" oninput="ubahFont(this.value)">
+    <header>
+        <div class="logo-title">
+            <h1>JADWAL KEGIATAN & AGENDA UTAMA</h1>
+            <p>Silakan periksa waktu dan lokasi ruangan Anda</p>
         </div>
-
-        <input type="hidden" id="edit-index" value="-1">
-        
-        <table class="input-table">
-            <tr>
-                <td width="130">PENGUMUMAN</td>
-                <td width="20">:</td>
-                <td><textarea id="judul" placeholder="Ketik pesan..."></textarea></td>
-            </tr>
-            <tr>
-                <td>TANGGAL</td>
-                <td>:</td>
-                <td><input type="date" id="tanggal"></td>
-            </tr>
-        </table>
-        
-        <button id="btn-save" onclick="simpanPengumuman()" style="padding:15px; background:#27ae60; color:white; border:none; width:100%; font-weight:bold; font-size:18px; cursor:pointer; border-radius: 8px;">SIMPAN PENGUMUMAN</button>
-        
-        <div style="margin-top:25px;">
-            <strong style="font-family: sans-serif;">Daftar Pesan Aktif:</strong>
-            <div id="admin-manage-list" style="margin-top:10px;"></div>
+        <div class="datetime-container">
+            <div>
+                <div id="clock">00:00:00</div>
+                <div id="date">Memuat Tanggal...</div>
+            </div>
+            <button class="btn-setting" onclick="toggleModal(true)">⚙️ Setting</button>
         </div>
-        <p style="color:#aaa; font-size:11px; text-align:center; margin-top:20px;">Tekan <b>"H"</b> untuk Sembunyi/Muncul.</p>
-    </div>
+    </header>
 
-    <div class="display-area">
-        <ul id="list-wrapper"></ul>
+    <main>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Hari, Tanggal & Waktu</th>
+                        <th style="width: 40%;">Nama Kegiatan / Agenda</th>
+                        <th style="width: 20%;">Lokasi / Ruang</th>
+                        <th style="width: 15%; text-align: center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="main-table-body">
+                    <tr><td colspan="4" style="text-align: center; color: #94a3b8;">Menghubungkan ke Database Online Global...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="settingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Pengaturan Jadwal Global (Online Database)</h2>
+                <button class="btn-close" onclick="toggleModal(false)">✕</button>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <input type="text" id="inputHariTgl" placeholder="Contoh: Senin, 15 Juni">
+                    <input type="text" id="inputWaktu" placeholder="Contoh: 08:30 - 12:00">
+                </div>
+                <input type="text" id="inputKegiatan" placeholder="Nama Agenda / Kegiatan Utama">
+                <input type="text" id="inputLokasi" placeholder="Lokasi Ruang / Tempat">
+            </div>
+            <button class="btn-add" id="btnAdd" onclick="addNewSchedule()">＋ Tambahkan ke Semua Layar</button>
+            <div class="schedule-manager-list" id="managerList"></div>
+        </div>
     </div>
 
     <script>
-        let listWrapper = document.getElementById('list-wrapper');
-        let adminManageList = document.getElementById('admin-manage-list');
-        let dataPengumuman = JSON.parse(localStorage.getItem('ledData')) || [];
-        let savedFS = localStorage.getItem('ledFontSize') || "5";
-        let position = window.innerHeight;
+        // PENTING: GANTI teks di bawah ini dengan URL api.npoint.io hasil Langkah 1 Anda!
+        const dbURL = "https://api.npoint.io/79fb87bf4e7964927964";
+        
+     let systemSchedules = [];
+        let currentHours = "00";
+        let currentMinutes = "00";
+        let editIndex = -1; // -1 berarti mode tambah, jika >= 0 berarti mode edit
 
-        function ubahFont(val) {
-            document.getElementById('font-val').innerText = val;
-            localStorage.setItem('ledFontSize', val);
-            renderAll();
+        // JAM REALTIME
+        function updateDateTime() {
+            try {
+                const now = new Date();
+                currentHours = String(now.getHours()).padStart(2, '0');
+                currentMinutes = String(now.getMinutes()).padStart(2, '0');
+                
+                document.getElementById('clock').textContent = `${currentHours}:${currentMinutes}:${String(now.getSeconds()).padStart(2, '0')}`;
+                
+                const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+                document.getElementById('date').textContent = now.toLocaleDateString('id-ID', options);
+
+                updateStatusBadges(currentHours, currentMinutes);
+            } catch(err) { console.error(err); }
         }
 
-        function renderAll() {
-            listWrapper.innerHTML = '';
-            adminManageList.innerHTML = '';
-            let currentFS = localStorage.getItem('ledFontSize') || "5";
+        // BACA DATA DARI CLOUD
+        async function loadDataFromCloud() {
+            try {
+                const response = await fetch(`${dbURL}?_=${new Date().getTime()}`);
+                if (!response.ok) throw new Error();
+                
+                systemSchedules = await response.json();
+                if (!Array.isArray(systemSchedules)) systemSchedules = [];
+                renderSchedules(false);
+            } catch (e) {
+                console.error("Gagal membaca database cloud.");
+                systemSchedules = JSON.parse(localStorage.getItem("LOCAL_JWS_DATA")) || [];
+                renderSchedules(false);
+            }
+        }
 
-            dataPengumuman.forEach((item, index) => {
-                // Tampilan LED
-                let li = document.createElement('li');
-                li.className = 'announcement-item';
-                li.innerHTML = `<div class="date-badge">${item.tglDisplay}</div><div class="text-content" style="font-size:${currentFS}rem">${item.teks}</div>`;
-                listWrapper.appendChild(li);
+        // TULIS DATA KE CLOUD
+        async function saveDataToCloud() {
+            localStorage.setItem("LOCAL_JWS_DATA", JSON.stringify(systemSchedules));
+            try {
+                await fetch(dbURL, {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(systemSchedules)
+                });
+            } catch (e) { 
+                console.error("Gagal push data ke database server.", e); 
+            }
+        }
 
-                // Tampilan Daftar Admin
-                let div = document.createElement('div');
-                div.className = 'admin-item';
-                div.innerHTML = `
-                    <span style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.teks}</span>
-                    <div>
-                        <button onclick="isiFormEdit(${index})" style="background:#f39c12; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Edit</button>
-                        <button onclick="hapusItem(${index})" style="background:#e74c3c; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px; margin-left:5px;">Hapus</button>
-                    </div>
+        // TAMPILKAN TABEL LAYAR
+        function renderSchedules(shouldSave = true) {
+            const mainTbody = document.getElementById('main-table-body');
+            const managerList = document.getElementById('managerList');
+            if (!mainTbody) return;
+            
+            mainTbody.innerHTML = ''; 
+            if(managerList) managerList.innerHTML = '';
+
+            if (systemSchedules.length === 0) {
+                mainTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Tidak ada agenda kegiatan saat ini. Klik Setting untuk menambah.</td></tr>`;
+                if (shouldSave) saveDataToCloud();
+                return;
+            }
+
+            systemSchedules.forEach((item, index) => {
+                const cleanTimeRange = item.waktu.replace(/\s+/g, '');
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-time', cleanTimeRange);
+                
+                tr.innerHTML = `
+                    <td class="col-time">
+                        <div style="font-size:0.95rem; color:#94a3b8; font-weight:normal; margin-bottom:3px;">${item.hariTgl || ''}</div>
+                        <div>${item.waktu}</div>
+                    </td>
+                    <td class="col-event">${item.kegiatan}</td>
+                    <td class="col-room">${item.lokasi}</td>
+                    <td style="text-align: center;"><span class="status-badge">Memuat...</span></td>
                 `;
-                adminManageList.appendChild(div);
+                mainTbody.appendChild(tr);
+
+                if(managerList) {
+                    const managerItem = document.createElement('div');
+                    managerItem.className = 'manager-item';
+                    managerItem.innerHTML = `
+                        <div class="manager-item-text">
+                            <small style="color:#f59e0b;">${item.hariTgl || ''} | ${item.waktu}</small><br>
+                            <strong>${item.kegiatan}</strong> (${item.lokasi})
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="isiFormEdit(${index})" style="background-color: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold;">Edit</button>
+                            <button class="btn-delete" onclick="deleteSchedule(${index})">Hapus</button>
+                        </div>
+                    `;
+                    managerList.appendChild(managerItem);
+                }
+            });
+
+            updateStatusBadges(currentHours, currentMinutes);
+            if (shouldSave) saveDataToCloud();
+        }
+
+        // FUNGSI ISI FORM SAAT TOMBOL EDIT DIKLIK
+        function isiFormEdit(index) {
+            const item = systemSchedules[index];
+            document.getElementById('inputHariTgl').value = item.hariTgl || '';
+            document.getElementById('inputWaktu').value = item.waktu || '';
+            document.getElementById('inputKegiatan').value = item.kegiatan || '';
+            document.getElementById('inputLokasi').value = item.lokasi || '';
+            
+            // Set index yang sedang diedit dan ubah tampilan tombol utama
+            editIndex = index;
+            const btnAdd = document.getElementById('btnAdd');
+            btnAdd.textContent = "💾 Simpan Perubahan";
+            btnAdd.style.backgroundColor = "#f39c12";
+            
+            // Scroll ke arah form input di dalam modal agar operator fokus
+            document.querySelector('.modal-content').scrollTop = 0;
+        }
+
+        // SIMPAN DATA JADWAL (BISA TAMBAH BARU / UPDATE DATA EDIT)
+        async function addNewSchedule() {
+            const hariTgl = document.getElementById('inputHariTgl').value.trim();
+            const waktu = document.getElementById('inputWaktu').value.trim();
+            const kegiatan = document.getElementById('inputKegiatan').value.trim();
+            const lokasi = document.getElementById('inputLokasi').value.trim();
+            
+            if (!waktu || !kegiatan || !lokasi || !waktu.includes('-')) {
+                return alert("Isi dengan benar! Contoh format waktu: 08:30 - 12:00");
+            }
+
+            const btnAdd = document.getElementById('btnAdd');
+            btnAdd.disabled = true;
+
+            if (editIndex === -1) {
+                // Mode Tambah Jadwal Baru
+                systemSchedules.push({ hariTgl, waktu, kegiatan, lokasi });
+            } else {
+                // Mode Update Jadwal yang Sudah Ada
+                systemSchedules[editIndex] = { hariTgl, waktu, kegiatan, lokasi };
+                editIndex = -1; // Reset kembali ke mode tambah
+                btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
+                btnAdd.style.backgroundColor = "#10b981";
+            }
+
+            renderSchedules(true);
+
+            // Bersihkan form input kembali kosong
+            document.getElementById('inputHariTgl').value = '';
+            document.getElementById('inputWaktu').value = '';
+            document.getElementById('inputKegiatan').value = '';
+            document.getElementById('inputLokasi').value = '';
+            btnAdd.disabled = false;
+        }
+
+        function deleteSchedule(index) {
+            if (confirm("Hapus jadwal ini?")) {
+                // Jika sedang mengedit jadwal yang dihapus, reset status form ke tambah baru
+                if (editIndex === index) {
+                    editIndex = -1;
+                    const btnAdd = document.getElementById('btnAdd');
+                    btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
+                    btnAdd.style.backgroundColor = "#10b981";
+                    document.getElementById('inputHariTgl').value = '';
+                    document.getElementById('inputWaktu').value = '';
+                    document.getElementById('inputKegiatan').value = '';
+                    document.getElementById('inputLokasi').value = '';
+                }
+                systemSchedules.splice(index, 1);
+                renderSchedules(true);
+            }
+        }
+
+        // HITUNG STATUS BADGE OTOMATIS (VERSI AMAN & ANTI-CRASH)
+        function updateStatusBadges(currentHour, currentMinute) {
+            const now = new Date();
+            const hariIniMurni = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            document.querySelectorAll('#main-table-body tr[data-time]').forEach(row => {
+                try {
+                    const timeRange = row.getAttribute('data-time');
+                    if (!timeRange || !timeRange.includes('-')) return;
+
+                    const colTimeText = row.querySelector('.col-time div').textContent || '';
+                    const badge = row.querySelector('.status-badge');
+                    if (!badge) return;
+
+                    let tglAgenda = new Date(hariIniMurni); 
+
+                    if (colTimeText) {
+                        const daftarBulan = ['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'];
+                        const teksBersih = colTimeText.toLowerCase();
+                        
+                        const matchTanggal = teksBersih.match(/\b\d{1,2}\b/);
+                        let indexBulan = -1;
+                        
+                        daftarBulan.forEach((bln, idx) => {
+                            if (teksBersih.includes(bln)) indexBulan = idx;
+                        });
+
+                        const matchTahun = teksBersih.match(/\b20\d{2}\b/);
+                        const tahunAgenda = matchTahun ? parseInt(matchTahun[0]) : now.getFullYear();
+
+                        if (matchTanggal && indexBulan !== -1) {
+                            const tglAngka = parseInt(matchTanggal[0]);
+                            const cekTanggalValid = new Date(tahunAgenda, indexBulan, tglAngka);
+                            
+                            if (!isNaN(cekTanggalValid.getTime())) {
+                                tglAgenda = cekTanggalValid;
+                            }
+                        }
+                    }
+
+                    const cleanTimeRange = timeRange.replace(/\./g, ':');
+                    const [startTime, endTime] = cleanTimeRange.split('-');
+                    
+                    const [jamMulai, menitMulai] = startTime.split(':').map(Number);
+                    const [jamSelesai, menitSelesai] = endTime.split(':').map(Number);
+
+                    if (isNaN(jamMulai) || isNaN(jamSelesai)) {
+                        badge.textContent = 'Format Jam Salah';
+                        badge.className = 'status-badge status-waiting';
+                        return; 
+                    }
+
+                    const waktuMulaiLengkap = new Date(tglAgenda).setHours(jamMulai, menitMulai || 0, 0, 0);
+                    const waktuSelesaiLengkap = new Date(tglAgenda).setHours(jamSelesai, menitSelesai || 0, 0, 0);
+                    const waktuSekarangLengkap = now.getTime();
+
+                    badge.className = 'status-badge';
+                    
+                    if (waktuSekarangLengkap > waktuSelesaiLengkap) {
+                        badge.textContent = 'Selesai';
+                        badge.className = 'status-badge status-done';
+                    } else if (waktuSekarangLengkap >= waktuMulaiLengkap && waktuSekarangLengkap <= waktuSelesaiLengkap) {
+                        badge.textContent = 'Berlangsung';
+                        badge.className = 'status-badge status-ongoing';
+                    } else {
+                        badge.textContent = 'Menunggu';
+                        badge.className = 'status-badge status-waiting';
+                    }
+
+                } catch (error) {
+                    console.error("Terjadi kesalahan pembacaan baris jadwal:", error);
+                    const badgeGagal = row.querySelector('.status-badge');
+                    if (badgeGagal) {
+                        badgeGagal.textContent = 'Menunggu';
+                        badgeGagal.className = 'status-badge status-waiting';
+                    }
+                }
             });
         }
-
-        function simpanPengumuman() {
-            let judul = document.getElementById('judul').value;
-            let tanggal = document.getElementById('tanggal').value;
-            let editIndex = document.getElementById('edit-index').value;
-
-            if (!judul || !tanggal) return alert("Isi pesan dan tanggal!");
-
-            let d = new Date(tanggal);
-            let tglDisplay = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' });
-
-            if (editIndex === "-1") {
-                dataPengumuman.push({ teks: judul, tglRaw: tanggal, tglDisplay: tglDisplay });
-            } else {
-                dataPengumuman[editIndex] = { teks: judul, tglRaw: tanggal, tglDisplay: tglDisplay };
-                document.getElementById('edit-index').value = "-1";
-                document.getElementById('btn-save').innerText = "SIMPAN PENGUMUMAN";
-                document.getElementById('btn-save').style.background = "#27ae60";
+        
+        function toggleModal(show) { 
+            // Jika modal ditutup, reset paksa form dari mode edit ke mode tambah biasa
+            if (!show && editIndex !== -1) {
+                editIndex = -1;
+                const btnAdd = document.getElementById('btnAdd');
+                btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
+                btnAdd.style.backgroundColor = "#10b981";
+                document.getElementById('inputHariTgl').value = '';
+                document.getElementById('inputWaktu').value = '';
+                document.getElementById('inputKegiatan').value = '';
+                document.getElementById('inputLokasi').value = '';
             }
-
-            localStorage.setItem('ledData', JSON.stringify(dataPengumuman));
-            document.getElementById('judul').value = '';
-            document.getElementById('tanggal').value = '';
-            renderAll();
+            document.getElementById('settingModal').classList.toggle('active', show); 
         }
 
-        function isiFormEdit(index) {
-            let item = dataPengumuman[index];
-            document.getElementById('judul').value = item.teks;
-            document.getElementById('tanggal').value = item.tglRaw;
-            document.getElementById('edit-index').value = index;
-            document.getElementById('btn-save').innerText = "UPDATE PESAN";
-            document.getElementById('btn-save').style.background = "#f39c12";
-        }
+        // EKSEKUSI INTERVAL JALAN UTAMA
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+        loadDataFromCloud();
 
-        function hapusItem(index) {
-            if(confirm("Hapus pesan ini?")) {
-                dataPengumuman.splice(index, 1);
-                localStorage.setItem('ledData', JSON.stringify(dataPengumuman));
-                renderAll();
-            }
-        }
-
-        function animate() {
-            position -= 1.5; 
-            if (position < -listWrapper.offsetHeight) position = window.innerHeight;
-            listWrapper.style.top = position + 'px';
-            requestAnimationFrame(animate);
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'h') document.getElementById('admin-panel').classList.toggle('hidden');
-        });
-
-        document.getElementById('fontSlider').value = savedFS;
-        document.getElementById('font-val').innerText = savedFS;
-        renderAll();
-        animate();
+        // Singkronisasi background tiap 5 detik
+        setInterval(loadDataFromCloud, 5000);
     </script>
 </body>
 </html>
