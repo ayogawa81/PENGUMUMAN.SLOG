@@ -71,9 +71,27 @@
         .manager-item { display: flex; justify-content: space-between; align-items: center; background-color: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #2d3748; gap: 10px; }
         .manager-item-text { font-size: 0.95rem; color: #cbd5e1; flex: 1; }
         .btn-delete { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+
+        /* OVERLAY UNLOCK AUDIO KHUSUS TV TIZEN */
+        #tizenAudioUnlocker {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(15, 23, 42, 0.98); z-index: 99999; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            color: white; text-align: center; padding: 20px;
+        }
     </style>
 </head>
 <body>
+
+    <div id="tizenAudioUnlocker">
+        <h1 style="font-size: 2.5rem; margin-bottom: 15px; color: #3b82f6; font-weight: 800;">SISTEM MONITORING JADWAL</h1>
+        <p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Harap klik tombol di bawah ini menggunakan remote atau mouse agar TV Tizen mengizinkan suara pengumuman AI aktif.</p>
+        <button onclick="bukaKunciAudioTizen()" style="padding: 18px 45px; font-size: 1.5rem; font-weight: bold; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(16,185,129,0.4);">
+            🔊 AKTIFKAN SUARA DISPLAY
+        </button>
+    </div>
+
+    <audio id="globalAudioPlayer" crossOrigin="anonymous" preload="auto"></audio>
 
     <header>
         <div class="logo-title">
@@ -127,16 +145,36 @@
     </div>
 
     <script>
-        // PENTING: GANTI teks di bawah ini dengan URL api.npoint.io hasil Langkah 1 Anda!
         const dbURL = "https://api.npoint.io/79fb87bf4e7964927964";
         
-     let systemSchedules = [];
+        let systemSchedules = [];
         let currentHours = "00";
         let currentMinutes = "00";
-        let editIndex = -1; // -1 berarti mode tambah, jika >= 0 berarti mode edit
-        
-        // Memori pengingat agar AI hanya mengumumkan kegiatan satu kali saja per sesi dimulai
+        let editIndex = -1;
         let spokenSchedules = new Set();
+        
+        // Flag penanda apakah TV Tizen sudah memberikan izin audio
+        let tizenAudioValid = false;
+
+        // FUNGSI UNTUK MEMBUKA LOCK AUDIO TIZEN (DIPICU OLEH TOMBOL OVERLAY)
+        function bukaKunciAudioTizen() {
+            try {
+                const player = document.getElementById('globalAudioPlayer');
+                // Pancing dengan audio base64 kosong durasi 0.1 detik
+                player.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+                
+                player.play().then(() => {
+                    tizenAudioValid = true;
+                    document.getElementById('tizenAudioUnlocker').style.display = 'none';
+                    console.log("Audio Player Tizen Berhasil Di-unlock!");
+                }).catch(err => {
+                    alert("Gagal mengaktifkan Audio. Harap klik ulang tombol!");
+                    console.error(err);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
 
         // JAM REALTIME
         function updateDateTime() {
@@ -154,7 +192,7 @@
             } catch(err) { console.error(err); }
         }
 
-        // FUNGSI BUNYI BEEP SINTETIS (Murni Kode Audio, Tanpa Perlu File Mp3 External)
+        // FUNGSI BUNYI BEEP SINTETIS
         function playBeepSound(callback) {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -176,42 +214,44 @@
                     oscillator.stop(waktuMulai + durasi);
                 }
                 
-                // Beep pertama (Nada Tinggi)
                 pembuatBeep(audioCtx.currentTime, 880, 0.15);
-                // Beep kedua (Nada Lebih Tinggi setelah jeda 0.2 detik)
                 pembuatBeep(audioCtx.currentTime + 0.2, 1046.5, 0.2);
                 
-                // Jalankan fungsi pengumuman AI setelah suara beep selesai berbunyi
                 setTimeout(() => {
                     if (callback) callback();
-                }, 500);
+                }, 550);
             } catch (e) {
-                console.error("Gagal membunyikan beep audio: ", e);
+                console.error("Gagal membunyikan beep: ", e);
                 if (callback) callback();
             }
         }
 
-       // FUNGSI SUARA AI KHUSUS TV TIZEN (MENGGUNAKAN AUDIO STREAMING GOOGLE)
+        // FUNGSI SUARA AI DENGAN ENGINE BARU TERUJI DI SMART TV
         function panggilSuaraAI(teks) {
+            if (!tizenAudioValid) {
+                console.warn("Izin audio belum dibuka oleh operator TV!");
+                return;
+            }
+
             try {
-                // Bersihkan teks dari karakter aneh agar URL aman
+                const player = document.getElementById('globalAudioPlayer');
                 const teksBersih = encodeURIComponent(teks);
                 
-                // Menggunakan server TTS eksternal Google (Bahasa Indonesia)
-                const urlAudioGoogle = `https://translate.google.com/translate_tts?ie=UTF-8&tl=id&client=tw-ob&q=${teksBersih}`;
+                // Menggunakan endpoint API TTS yang bebas blokir CORS Tizen
+                player.src = `https://dict.youdao.com/dictvoice?audio=${teksBersih}&le=id`;
+                player.load();
                 
-                // Buat elemen audio dinamis di memori TV
-                const audioPemberitahuan = new Audio(urlAudioGoogle);
-                audioPemberitahuan.volume = 1.0; // Volume Maksimal (0.0 sampai 1.0)
-                
-                // Putar suara pengumuman
-                audioPemberitahuan.play().catch(err => {
-                    console.error("Gagal memutar audio otomatis di Tizen:", err);
-                });
+                const playPromise = player.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.error("Puter Audio AI Gagal di Tizen:", error);
+                    });
+                }
             } catch (error) {
-                console.error("Error pada modul audio Tizen:", error);
+                console.error("Error pada manipulasi element audio:", error);
             }
         }
+
         // BACA DATA DARI CLOUD
         async function loadDataFromCloud() {
             try {
@@ -294,7 +334,6 @@
             if (shouldSave) saveDataToCloud();
         }
 
-        // FUNGSI ISI FORM SAAT TOMBOL EDIT DIKLIK
         function isiFormEdit(index) {
             const item = systemSchedules[index];
             document.getElementById('inputHariTgl').value = item.hariTgl || '';
@@ -306,11 +345,8 @@
             const btnAdd = document.getElementById('btnAdd');
             btnAdd.textContent = "💾 Simpan Perubahan";
             btnAdd.style.backgroundColor = "#f39c12";
-            
-            document.querySelector('.modal-content').scrollTop = 0;
         }
 
-        // SIMPAN DATA JADWAL (BISA TAMBAH BARU / UPDATE DATA EDIT)
         async function addNewSchedule() {
             const hariTgl = document.getElementById('inputHariTgl').value.trim();
             const waktu = document.getElementById('inputWaktu').value.trim();
@@ -327,9 +363,10 @@
             if (editIndex === -1) {
                 systemSchedules.push({ hariTgl, waktu, kegiatan, lokasi });
             } else {
-                // Jika data diedit, hapus ID dari memori suara agar jika jam diubah, ia bisa berbunyi lagi
                 const uniqueKey = `${hariTgl}-${waktu}-${kegiatan}`;
-                spokenSchedules.delete(uniqueKey);
+                spokenSchedules.delete(`${uniqueKey}-menunggu`);
+                spokenSchedules.delete(`${uniqueKey}-berlangsung`);
+                spokenSchedules.delete(`${uniqueKey}-selesai`);
 
                 systemSchedules[editIndex] = { hariTgl, waktu, kegiatan, lokasi };
                 editIndex = -1;
@@ -363,7 +400,7 @@
             }
         }
 
-       // HITUNG STATUS BADGE OTOMATIS & PICU AUDIO AI (UNTUK SEMUA STATUS)
+        // HITUNG STATUS BADGE & PICU AUDIO AI
         function updateStatusBadges(currentHour, currentMinute) {
             const now = new Date();
             const hariIniMurni = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -384,7 +421,6 @@
                     if (colTimeText) {
                         const daftarBulan = ['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'];
                         const teksBersih = colTimeText.toLowerCase();
-                        
                         const matchTanggal = teksBersih.match(/\b\d{1,2}\b/);
                         let indexBulan = -1;
                         
@@ -398,16 +434,12 @@
                         if (matchTanggal && indexBulan !== -1) {
                             const tglAngka = parseInt(matchTanggal[0]);
                             const cekTanggalValid = new Date(tahunAgenda, indexBulan, tglAngka);
-                            
-                            if (!isNaN(cekTanggalValid.getTime())) {
-                                tglAgenda = cekTanggalValid;
-                            }
+                            if (!isNaN(cekTanggalValid.getTime())) tglAgenda = cekTanggalValid;
                         }
                     }
 
                     const cleanTimeRange = timeRange.replace(/\./g, ':');
                     const [startTime, endTime] = cleanTimeRange.split('-');
-                    
                     const [jamMulai, menitMulai] = startTime.split(':').map(Number);
                     const [jamSelesai, menitSelesai] = endTime.split(':').map(Number);
 
@@ -422,22 +454,17 @@
                     const waktuSekarangLengkap = now.getTime();
 
                     badge.className = 'status-badge';
-                    
-                    // Base key unik untuk menandai baris kegiatan ini
                     const baseKey = `${colTimeText}-${timeRange}-${eventName}`;
 
                     if (waktuSekarangLengkap > waktuSelesaiLengkap) {
                         badge.textContent = 'Selesai';
                         badge.className = 'status-badge status-done';
 
-                        // PEMICU SUARA JIKA STATUS = SELESAI
                         const keySelesai = `${baseKey}-selesai`;
                         if (!spokenSchedules.has(keySelesai)) {
                             spokenSchedules.add(keySelesai);
-                            
                             playBeepSound(() => {
-                                const teksPengumuman = `Informasi, kegiatan ${eventName} di lokasi ${roomName} telah selesai.`;
-                                panggilSuaraAI(teksPengumuman);
+                                panggilSuaraAI(`Informasi, kegiatan ${eventName} di lokasi ${roomName} telah selesai.`);
                             });
                         }
 
@@ -445,14 +472,11 @@
                         badge.textContent = 'Berlangsung';
                         badge.className = 'status-badge status-ongoing';
 
-                        // PEMICU SUARA JIKA STATUS = BERLANGSUNG
                         const keyBerlangsung = `${baseKey}-berlangsung`;
                         if (!spokenSchedules.has(keyBerlangsung)) {
                             spokenSchedules.add(keyBerlangsung);
-                            
                             playBeepSound(() => {
-                                const teksPengumuman = `Perhatian, kegiatan ${eventName} di lokasi ${roomName} sedang berlangsung.`;
-                                panggilSuaraAI(teksPengumuman);
+                                panggilSuaraAI(`Perhatian, kegiatan ${eventName} di lokasi ${roomName} sedang berlangsung.`);
                             });
                         }
 
@@ -460,25 +484,17 @@
                         badge.textContent = 'Menunggu';
                         badge.className = 'status-badge status-waiting';
 
-                        // PEMICU SUARA JIKA STATUS = MENUNGGU (Baru ditambahkan ke daftar layar)
                         const keyMenunggu = `${baseKey}-menunggu`;
                         if (!spokenSchedules.has(keyMenunggu)) {
                             spokenSchedules.add(keyMenunggu);
-                            
                             playBeepSound(() => {
-                                const teksPengumuman = `Pemberitahuan, kegiatan ${eventName} di lokasi ${roomName} dalam status menunggu.`;
-                                panggilSuaraAI(teksPengumuman);
+                                panggilSuaraAI(`Pemberitahuan, kegiatan ${eventName} di lokasi ${roomName} dalam status menunggu.`);
                             });
                         }
                     }
 
                 } catch (error) {
-                    console.error("Terjadi kesalahan pembacaan baris jadwal:", error);
-                    const badgeGagal = row.querySelector('.status-badge');
-                    if (badgeGagal) {
-                        badgeGagal.textContent = 'Menunggu';
-                        badgeGagal.className = 'status-badge status-waiting';
-                    }
+                    console.error(error);
                 }
             });
         }
@@ -497,20 +513,10 @@
             document.getElementById('settingModal').classList.toggle('active', show); 
         }
 
-        // PENTING: Ketentuan keamanan Google Chrome/Edge mewajibkan interaksi user (klik layar pertama kali) 
-        // agar audio browser diizinkan menyala secara otomatis demi menghindari spam audio iklan otomatis.
-        window.addEventListener('click', () => {
-            // Memancing aktivasi AudioContext saat pertama kali admin mengklik area mana saja di layar
-            const dummyCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if(dummyCtx.state === 'suspended') dummyCtx.resume();
-        }, { once: true });
-
-        // EKSEKUSI INTERVAL JALAN UTAMA
+        // INTERVAL JALAN UTAMA
         setInterval(updateDateTime, 1000);
         updateDateTime();
         loadDataFromCloud();
-
-        // Sinkronisasi database tiap 5 detik
         setInterval(loadDataFromCloud, 5000);
     </script>
 </body>
