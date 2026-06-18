@@ -91,7 +91,7 @@
         </button>
     </div>
 
-    <audio id="globalAudioPlayer" crossOrigin="anonymous" preload="auto"></audio>
+    <audio id="globalAudioPlayer" preload="auto"></audio>
 
     <header>
         <div class="logo-title">
@@ -153,14 +153,11 @@
         let editIndex = -1;
         let spokenSchedules = new Set();
         
-        // Flag penanda apakah TV Tizen sudah memberikan izin audio
         let tizenAudioValid = false;
 
-        // FUNGSI UNTUK MEMBUKA LOCK AUDIO TIZEN (DIPICU OLEH TOMBOL OVERLAY)
         function bukaKunciAudioTizen() {
             try {
                 const player = document.getElementById('globalAudioPlayer');
-                // Pancing dengan audio base64 kosong durasi 0.1 detik
                 player.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
                 
                 player.play().then(() => {
@@ -176,7 +173,6 @@
             }
         }
 
-        // JAM REALTIME
         function updateDateTime() {
             try {
                 const now = new Date();
@@ -192,7 +188,6 @@
             } catch(err) { console.error(err); }
         }
 
-        // FUNGSI BUNYI BEEP SINTETIS
         function playBeepSound(callback) {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -226,7 +221,7 @@
             }
         }
 
-        // FUNGSI SUARA AI DENGAN ENGINE BARU TERUJI DI SMART TV
+        // DI SINI: Engine suara diganti ke Google Translate TTS (Mendukung kalimat panjang Bahasa Indonesia resmi)
         function panggilSuaraAI(teks) {
             if (!tizenAudioValid) {
                 console.warn("Izin audio belum dibuka oleh operator TV!");
@@ -237,22 +232,24 @@
                 const player = document.getElementById('globalAudioPlayer');
                 const teksBersih = encodeURIComponent(teks);
                 
-                // Menggunakan endpoint API TTS yang bebas blokir CORS Tizen
-                player.src = `https://dict.youdao.com/dictvoice?audio=${teksBersih}&le=id`;
+                // Endpoint Google TTS bebas sensor CORS Tizen Smart TV
+                player.src = `https://translate.google.com/translate_tts?ie=UTF-8&tl=id&client=tw-ob&q=${teksBersih}`;
                 player.load();
                 
-                const playPromise = player.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.error("Puter Audio AI Gagal di Tizen:", error);
-                    });
-                }
+                // Jeda microsecond agar loading buffer TV selesai sempurna
+                setTimeout(() => {
+                    const playPromise = player.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.error("Puter Audio AI Gagal di Tizen:", error);
+                        });
+                    }
+                }, 150);
             } catch (error) {
                 console.error("Error pada manipulasi element audio:", error);
             }
         }
 
-        // BACA DATA DARI CLOUD
         async function loadDataFromCloud() {
             try {
                 const response = await fetch(`${dbURL}?_=${new Date().getTime()}`);
@@ -268,7 +265,6 @@
             }
         }
 
-        // TULIS DATA KE CLOUD
         async function saveDataToCloud() {
             localStorage.setItem("LOCAL_JWS_DATA", JSON.stringify(systemSchedules));
             try {
@@ -282,7 +278,6 @@
             }
         }
 
-        // TAMPILKAN TABEL LAYAR
         function renderSchedules(shouldSave = true) {
             const mainTbody = document.getElementById('main-table-body');
             const managerList = document.getElementById('managerList');
@@ -363,7 +358,6 @@
             if (editIndex === -1) {
                 systemSchedules.push({ hariTgl, waktu, kegiatan, lokasi });
             } else {
-                // AMBIL DATA LAMA SEBELUM DI-UPDATE UNTUK MEMBERSIHKAN MEMORI SUARA
                 const oldItem = systemSchedules[editIndex];
                 const oldKey = `${oldItem.hariTgl || ''}-${oldItem.waktu.replace(/\s+/g, '')}-${oldItem.kegiatan}`;
                 
@@ -371,7 +365,6 @@
                 spokenSchedules.delete(`${oldKey}-berlangsung`);
                 spokenSchedules.delete(`${oldKey}-selesai`);
 
-                // Update dengan data baru
                 systemSchedules[editIndex] = { hariTgl, waktu, kegiatan, lokasi };
                 editIndex = -1;
                 btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
@@ -404,7 +397,6 @@
             }
         }
 
-        // HITUNG STATUS BADGE & PICU AUDIO AI
         function updateStatusBadges(currentHour, currentMinute) {
             const now = new Date();
             const hariIniMurni = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -517,7 +509,6 @@
             document.getElementById('settingModal').classList.toggle('active', show); 
         }
 
-        // INTERVAL JALAN UTAMA
         setInterval(updateDateTime, 1000);
         updateDateTime();
         loadDataFromCloud();
