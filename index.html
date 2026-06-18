@@ -228,32 +228,65 @@
             }
         }
 
-    // GANTI FUNGSI panggilSuaraAI LAMA DENGAN KODE KHUSUS TIZEN INI
-function panggilSuaraAI(teks) {
+    function panggilSuaraAI(teks) {
     if (!tizenAudioValid) return;
 
+    // 1. OPSI UTAMA: MENGGUNAKAN VOICE RSS (SUARA WANITA INDONESIA - INTAN)
     try {
-        console.log("Memutar Audio Tizen via Voice RSS: " + teks);
+        console.log("Mencoba Voice RSS (Suara Wanita): " + teks);
         const player = document.getElementById('globalAudioPlayer');
         
-        // MASUKKAN API KEY JALUR GRATIS ANDA DI SINI
-        const apiKey = "1dcaf4a9430148c3acf148035b135cbf"; 
+        // MASUKKAN API KEY VOICE RSS ANDA DI SINI
+        const apiKey = "MASUKKAN_API_KEY_VOICE_RSS_ANDA_DI_SINI"; 
         
-        // Menggunakan enkripsi base64 standar agar lolos sensor CORS Tizen OS
-        const url = `https://api.voicerss.org/?key=${apiKey}&hl=id-id&v=Akbar&c=mp3&f=16khz_16bit_stereo&src=${encodeURIComponent(teks)}`;
+        // v=Intan adalah konfigurasi untuk suara wanita Indonesia yang jernih
+        const url = `https://api.voicerss.org/?key=${apiKey}&hl=id-id&v=Intan&c=mp3&f=16khz_16bit_stereo&src=${encodeURIComponent(teks)}`;
         
         player.src = url;
         player.load();
         
-        // Beri jeda 300ms agar hardware decoder Tizen siap membaca data stream
         setTimeout(() => {
             player.play().catch(err => {
-                console.error("Tizen menolak play otomatis suara AI:", err);
+                console.warn("Voice RSS diblokir Tizen, beralih ke jalur cadangan lokal...", err);
+                jalurCadanganTizenLokal(teks); // Pindah ke jalur cadangan jika error
             });
         }, 300);
 
     } catch (error) {
-        console.error("Error pada metode Audio Player Tizen:", error);
+        console.error("Gagal memuat Voice RSS, mencoba jalur cadangan...", error);
+        jalurCadanganTizenLokal(teks);
+    }
+}
+
+// 2. JALUR CADANGAN: MENGGUNAKAN SPEECH SYNTHESIS INTERNAL BROWSER TIZEN
+function jalurCadanganTizenLokal(teks) {
+    try {
+        if ('speechSynthesis' in window) {
+            console.log("Menjalankan TTS Cadangan Internal TV...");
+            window.speechSynthesis.cancel(); // Bersihkan antrean yang macet
+
+            const speech = new SpeechSynthesisUtterance(teks);
+            speech.lang = 'id-ID';
+            speech.rate = 0.9; // Sedikit diperlambat agar artikulasi di TV lebih jelas
+            speech.pitch = 1.1; // Nada sedikit dinaikkan agar karakter suara lebih feminin
+
+            // Cari apakah sistem Tizen memiliki aset suara wanita lokal
+            const voices = window.speechSynthesis.getVoices();
+            const femaleVoice = voices.find(voice => 
+                (voice.lang.includes('id') || voice.lang.includes('ID')) && 
+                (voice.name.toLowerCase().includes('female') || voice.name.toLowerCase().includes('zira') || voice.name.toLowerCase().includes('google'))
+            );
+            
+            if (femaleVoice) {
+                speech.voice = femaleVoice;
+            }
+
+            window.speechSynthesis.speak(speech);
+        } else {
+            console.error("Browser TV ini benar-benar tidak mendukung Audio Web Speech.");
+        }
+    } catch (e) {
+        console.error("Jalur cadangan pun gagal:", e);
     }
 }
         async function loadDataFromCloud() {
