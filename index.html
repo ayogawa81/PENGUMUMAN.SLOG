@@ -364,7 +364,7 @@
             }
         }
 
-        // HITUNG STATUS BADGE OTOMATIS & PICU AUDIO AI
+       // HITUNG STATUS BADGE OTOMATIS & PICU AUDIO AI (UNTUK SEMUA STATUS)
         function updateStatusBadges(currentHour, currentMinute) {
             const now = new Date();
             const hariIniMurni = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -424,27 +424,53 @@
 
                     badge.className = 'status-badge';
                     
+                    // Base key unik untuk menandai baris kegiatan ini
+                    const baseKey = `${colTimeText}-${timeRange}-${eventName}`;
+
                     if (waktuSekarangLengkap > waktuSelesaiLengkap) {
                         badge.textContent = 'Selesai';
                         badge.className = 'status-badge status-done';
+
+                        // PEMICU SUARA JIKA STATUS = SELESAI
+                        const keySelesai = `${baseKey}-selesai`;
+                        if (!spokenSchedules.has(keySelesai)) {
+                            spokenSchedules.add(keySelesai);
+                            
+                            playBeepSound(() => {
+                                const teksPengumuman = `Informasi, kegiatan ${eventName} di lokasi ${roomName} telah selesai.`;
+                                panggilSuaraAI(teksPengumuman);
+                            });
+                        }
+
                     } else if (waktuSekarangLengkap >= waktuMulaiLengkap && waktuSekarangLengkap <= waktuSelesaiLengkap) {
                         badge.textContent = 'Berlangsung';
                         badge.className = 'status-badge status-ongoing';
 
-                        // LOGIKA PEMICU SUARA AI (DILAKUKAN SEKALI SAJA SAAT BERGANTI STATUS)
-                        const uniqueKey = `${colTimeText}-${timeRange}-${eventName}`;
-                        if (!spokenSchedules.has(uniqueKey)) {
-                            spokenSchedules.add(uniqueKey); // Kunci agar tidak bersuara lagi di detik berikutnya
+                        // PEMICU SUARA JIKA STATUS = BERLANGSUNG
+                        const keyBerlangsung = `${baseKey}-berlangsung`;
+                        if (!spokenSchedules.has(keyBerlangsung)) {
+                            spokenSchedules.add(keyBerlangsung);
                             
-                            // Eksekusi Beep lalu panggil teks AI
                             playBeepSound(() => {
                                 const teksPengumuman = `Perhatian, kegiatan ${eventName} di lokasi ${roomName} sedang berlangsung.`;
                                 panggilSuaraAI(teksPengumuman);
                             });
                         }
+
                     } else {
                         badge.textContent = 'Menunggu';
                         badge.className = 'status-badge status-waiting';
+
+                        // PEMICU SUARA JIKA STATUS = MENUNGGU (Baru ditambahkan ke daftar layar)
+                        const keyMenunggu = `${baseKey}-menunggu`;
+                        if (!spokenSchedules.has(keyMenunggu)) {
+                            spokenSchedules.add(keyMenunggu);
+                            
+                            playBeepSound(() => {
+                                const teksPengumuman = `Pemberitahuan, kegiatan ${eventName} di lokasi ${roomName} dalam status menunggu.`;
+                                panggilSuaraAI(teksPengumuman);
+                            });
+                        }
                     }
 
                 } catch (error) {
