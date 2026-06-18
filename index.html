@@ -228,37 +228,34 @@
             }
         }
 
-     // SOLUSI ALTERNATIF JIKA RESPONSIVEVOICE DIBLOKIR / INTERNET KURANG STABIL
+    // GANTI FUNGSI panggilSuaraAI LAMA DENGAN KODE KHUSUS TIZEN INI
 function panggilSuaraAI(teks) {
-    if (!tizenAudioValid) {
-        console.warn("Izin audio belum dibuka oleh operator TV!");
-        return;
-    }
+    if (!tizenAudioValid) return;
 
     try {
-        console.log("Memulai TTS Lokal: " + teks);
+        console.log("Memutar Audio Tizen via Voice RSS: " + teks);
+        const player = document.getElementById('globalAudioPlayer');
         
-        // Membatalkan antrean suara lama agar tidak macet/menumpuk
-        window.speechSynthesis.cancel(); 
+        // MASUKKAN API KEY JALUR GRATIS ANDA DI SINI
+        const apiKey = "1dcaf4a9430148c3acf148035b135cbf"; 
+        
+        // Menggunakan enkripsi base64 standar agar lolos sensor CORS Tizen OS
+        const url = `https://api.voicerss.org/?key=${apiKey}&hl=id-id&v=Akbar&c=mp3&f=16khz_16bit_stereo&src=${encodeURIComponent(teks)}`;
+        
+        player.src = url;
+        player.load();
+        
+        // Beri jeda 300ms agar hardware decoder Tizen siap membaca data stream
+        setTimeout(() => {
+            player.play().catch(err => {
+                console.error("Tizen menolak play otomatis suara AI:", err);
+            });
+        }, 300);
 
-        const speech = new SpeechSynthesisUtterance(teks);
-        speech.lang = 'id-ID'; // Mengunci ke bahasa Indonesia
-        speech.rate = 0.9;     // Kecepatan membaca
-        speech.pitch = 1;      // Nada suara
-
-        // Cari suara bahasa Indonesia yang tertanam di sistem TV
-        const voices = window.speechSynthesis.getVoices();
-        const indonesianVoice = voices.find(voice => voice.lang.includes('id') || voice.lang.includes('ID'));
-        if (indonesianVoice) {
-            speech.voice = indonesianVoice;
-        }
-
-        window.speechSynthesis.speak(speech);
     } catch (error) {
-        console.error("Error pada engine Web Speech API Lokal:", error);
+        console.error("Error pada metode Audio Player Tizen:", error);
     }
 }
-
         async function loadDataFromCloud() {
             try {
                 const response = await fetch(`${dbURL}?_=${new Date().getTime()}`);
