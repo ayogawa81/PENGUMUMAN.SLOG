@@ -191,28 +191,27 @@
             }
         }
 
-        // FUNGSI SUARA AI SUARA PEREMPUAN/LAKI BAHASA INDONESIA
+       // FUNGSI SUARA AI KHUSUS TV TIZEN (MENGGUNAKAN AUDIO STREAMING GOOGLE)
         function panggilSuaraAI(teks) {
-            if ('speechSynthesis' in window) {
-                // Batalkan suara sebelumnya jika sedang antre agar tidak tumpang tindih
-                window.speechSynthesis.cancel(); 
-
-                const ucapan = new SpeechSynthesisUtterance(teks);
-                ucapan.lang = 'id-ID'; // Set bahasa Indonesia resmi
-                ucapan.pitch = 1.0;    // Intonasi normal
-                ucapan.rate = 0.9;     // Kecepatan membaca sedikit diperlambat agar jelas terdengar
-
-                // Cari dan optimalkan ke modul suara lokal Bahasa Indonesia jika tersedia di sistem
-                const semuaSuara = window.speechSynthesis.getVoices();
-                const suaraIndo = semuaSuara.find(voice => voice.lang.includes('id-ID') || voice.lang.includes('id_ID'));
-                if (suaraIndo) ucapan.voice = suaraIndo;
-
-                window.speechSynthesis.speak(ucapan);
-            } else {
-                console.warn("Browser ini tidak mendukung fitur Suara AI (Text-to-Speech).");
+            try {
+                // Bersihkan teks dari karakter aneh agar URL aman
+                const teksBersih = encodeURIComponent(teks);
+                
+                // Menggunakan server TTS eksternal Google (Bahasa Indonesia)
+                const urlAudioGoogle = `https://translate.google.com/translate_tts?ie=UTF-8&tl=id&client=tw-ob&q=${teksBersih}`;
+                
+                // Buat elemen audio dinamis di memori TV
+                const audioPemberitahuan = new Audio(urlAudioGoogle);
+                audioPemberitahuan.volume = 1.0; // Volume Maksimal (0.0 sampai 1.0)
+                
+                // Putar suara pengumuman
+                audioPemberitahuan.play().catch(err => {
+                    console.error("Gagal memutar audio otomatis di Tizen:", err);
+                });
+            } catch (error) {
+                console.error("Error pada modul audio Tizen:", error);
             }
         }
-
         // BACA DATA DARI CLOUD
         async function loadDataFromCloud() {
             try {
