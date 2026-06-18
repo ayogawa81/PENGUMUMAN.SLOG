@@ -347,7 +347,7 @@
             btnAdd.style.backgroundColor = "#f39c12";
         }
 
-        async function addNewSchedule() {
+       async function addNewSchedule() {
             const hariTgl = document.getElementById('inputHariTgl').value.trim();
             const waktu = document.getElementById('inputWaktu').value.trim();
             const kegiatan = document.getElementById('inputKegiatan').value.trim();
@@ -363,11 +363,15 @@
             if (editIndex === -1) {
                 systemSchedules.push({ hariTgl, waktu, kegiatan, lokasi });
             } else {
-                const uniqueKey = `${hariTgl}-${waktu}-${kegiatan}`;
-                spokenSchedules.delete(`${uniqueKey}-menunggu`);
-                spokenSchedules.delete(`${uniqueKey}-berlangsung`);
-                spokenSchedules.delete(`${uniqueKey}-selesai`);
+                // AMBIL DATA LAMA SEBELUM DI-UPDATE UNTUK MEMBERSIHKAN MEMORI SUARA
+                const oldItem = systemSchedules[editIndex];
+                const oldKey = `${oldItem.hariTgl || ''}-${oldItem.waktu.replace(/\s+/g, '')}-${oldItem.kegiatan}`;
+                
+                spokenSchedules.delete(`${oldKey}-menunggu`);
+                spokenSchedules.delete(`${oldKey}-berlangsung`);
+                spokenSchedules.delete(`${oldKey}-selesai`);
 
+                // Update dengan data baru
                 systemSchedules[editIndex] = { hariTgl, waktu, kegiatan, lokasi };
                 editIndex = -1;
                 btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
