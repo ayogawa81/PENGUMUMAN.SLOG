@@ -180,28 +180,62 @@ let editIndex = -1;
 let spokenSchedules = new Set();
 let tizenAudioValid = false;
 
+// --- BAGIAN INI GANTIKAN DENGAN KODE DI BAWAH ---
+
+// 1. Perbaikan Fungsi Unlock Audio agar lebih memaksa sistem audio aktif
 function bukaKunciAudioTizen() {
-try {
-const player = document.getElementById('globalAudioPlayer');
-player.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+    try {
+        // Menggunakan AudioContext untuk memicu aktivasi audio di level sistem
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        
+        // Memutar suara kosong singkat sebagai trigger
+        const oscillator = audioCtx.createOscillator();
+        oscillator.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(0.01);
 
-player.play().then(() => {
-tizenAudioValid = true;
-document.getElementById('tizenAudioUnlocker').style.display = 'none';
-console.log("Audio Engine Berhasil Di-unlock!");
-
-setTimeout(() => {
-responsiveVoice.speak("Sistem monitoring suara display telah diaktifkan secara sukses.", "Indonesian Female", { volume: 1, rate: 0.95 });
-}, 300);
-}).catch(err => {
-alert("Gagal mengaktifkan Audio. Harap klik ulang tombol!");
-console.error(err);
-});
-} catch (e) {
-console.error(e);
+        tizenAudioValid = true;
+        document.getElementById('tizenAudioUnlocker').style.display = 'none';
+        
+        console.log("Audio Engine Aktif!");
+        // Uji coba langsung
+        panggilSuaraAI("Sistem pengumuman telah diaktifkan.");
+    } catch (e) {
+        alert("Gagal mengaktifkan Audio. Harap klik sekali lagi.");
+        console.error(e);
+    }
 }
+
+// 2. Fungsi Suara (Prioritas TTS Internal Browser TV)
+function panggilSuaraAI(teks) {
+    if (!tizenAudioValid) return;
+
+    try {
+        // Bersihkan antrean suara agar tidak menumpuk
+        window.speechSynthesis.cancel();
+
+        const speech = new SpeechSynthesisUtterance(teks);
+        speech.lang = 'id-ID';
+        speech.rate = 0.9;
+        speech.pitch = 1.0;
+
+        // Mencari suara bahasa Indonesia (Google TTS)
+        const voices = window.speechSynthesis.getVoices();
+        const idVoice = voices.find(v => v.lang.includes('id-ID'));
+        if (idVoice) {
+            speech.voice = idVoice;
+        }
+
+        window.speechSynthesis.speak(speech);
+        console.log("Membunyikan: " + teks);
+
+    } catch (error) {
+        console.error("Gagal menjalankan TTS:", error);
+    }
 }
 
+// --- AKHIR PERUBAHAN ---
 function updateDateTime() {
 try {
 const now = new Date();
