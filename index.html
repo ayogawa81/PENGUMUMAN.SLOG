@@ -283,32 +283,6 @@ console.error("Gagal membunyikan beep: ", e);
 if (callback) callback();
 }
 }
-
-function panggilSuaraAI(teks) {
-if (!tizenAudioValid) return;
-
-try {
-console.log("Mencoba Voice RSS (Suara Wanita): " + teks);
-const player = document.getElementById('globalAudioPlayer');
-const apiKey = "1dcaf4a9430148c3acf148035b135cbf";
-const url = `https://api.voicerss.org/?key=${apiKey}&hl=id-id&v=Intan&c=mp3&f=16khz_16bit_stereo&src=${encodeURIComponent(teks)}`;
-
-player.src = url;
-player.load();
-
-setTimeout(() => {
-player.play().catch(err => {
-console.warn("Voice RSS diblokir Tizen, beralih ke jalur cadangan lokal...", err);
-jalurCadanganTizenLokal(teks);
-});
-}, 300);
-
-} catch (error) {
-console.error("Gagal memuat Voice RSS, mencoba jalur cadangan...", error);
-jalurCadanganTizenLokal(teks);
-}
-}
-
 function jalurCadanganTizenLokal(teks) {
 try {
 if ('speechSynthesis' in window) {
