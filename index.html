@@ -1,74 +1,82 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Display Jadwal Terpadu</title>
-<style>
-    /* Styling tetap sama agar tampilan tidak berubah */
-    body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
-    #tizenAudioUnlocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
-    button { padding: 20px 40px; font-size: 1.5rem; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Jadwal Kegiatan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        #tizenAudioUnlocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        button { padding: 20px 40px; font-size: 1.5rem; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; margin-top: 20px; }
+        .content { padding: 40px; width: 100%; }
+        table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 10px; overflow: hidden; }
+        th, td { padding: 20px; text-align: left; border-bottom: 1px solid #334155; }
+    </style>
 </head>
 <body>
 
 <div id="tizenAudioUnlocker">
     <h1>SISTEM MONITORING JADWAL</h1>
     <p>Klik tombol di bawah untuk mengaktifkan suara pengumuman.</p>
-    <button onclick="bukaKunciAudioTizen()">AKTIFKAN SUARA</button>
+    <button onclick="bukaKunciAudio()">AKTIFKAN SUARA DISPLAY</button>
+</div>
+
+<div class="content">
+    <table id="main-table">
+        <thead>
+            <tr><th>Waktu</th><th>Kegiatan</th><th>Status</th></tr>
+        </thead>
+        <tbody id="main-table-body">
+            <tr><td colspan="3" style="text-align:center;">Memuat data...</td></tr>
+        </tbody>
+    </table>
 </div>
 
 <script>
-let tizenAudioValid = false;
+    let tizenAudioValid = false;
 
-// 1. Fungsi Unlock Audio yang Lebih Robust
-function bukaKunciAudioTizen() {
-    try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const audioCtx = new AudioContext();
-        
-        // Membuka kunci dengan memutar buffer kosong
-        const buffer = audioCtx.createBuffer(1, 1, 22050);
-        const source = audioCtx.createBufferSource();
-        source.buffer = buffer;
-        source.connect(audioCtx.destination);
-        source.start(0);
-
-        tizenAudioValid = true;
-        document.getElementById('tizenAudioUnlocker').style.display = 'none';
-        
-        // Uji coba suara segera setelah di-unlock
-        panggilSuaraAI("Sistem audio telah aktif.");
-    } catch (e) {
-        alert("Gagal mengaktifkan audio: " + e.message);
+    // 1. Mengaktifkan Audio Context (Kunci agar suara bisa diputar)
+    function bukaKunciAudio() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const audioCtx = new AudioContext();
+            audioCtx.resume();
+            tizenAudioValid = true;
+            document.getElementById('tizenAudioUnlocker').style.display = 'none';
+            panggilSuaraAI("Sistem suara telah aktif.");
+        } catch (e) {
+            console.error(e);
+        }
     }
-}
 
-// 2. Fungsi Panggilan Suara (Prioritas TTS Internal)
-function panggilSuaraAI(teks) {
-    if (!tizenAudioValid) return;
+    // 2. Fungsi Suara (Menggunakan Web Speech API karena lebih stabil di TV)
+    function panggilSuaraAI(teks) {
+        if (!tizenAudioValid) return;
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(teks);
+        msg.lang = 'id-ID';
+        msg.rate = 0.9;
+        window.speechSynthesis.speak(msg);
+    }
 
-    // Bersihkan antrean agar tidak menumpuk
-    window.speechSynthesis.cancel();
+    // 3. Memuat Data
+    async function loadData() {
+        try {
+            const response = await fetch("https://api.npoint.io/79fb87bf4e7964927964");
+            const data = await response.json();
+            const tbody = document.getElementById('main-table-body');
+            tbody.innerHTML = "";
+            data.forEach(item => {
+                tbody.innerHTML += `<tr><td>${item.waktu}</td><td>${item.kegiatan}</td><td>Aktif</td></tr>`;
+            });
+        } catch (e) {
+            document.getElementById('main-table-body').innerHTML = "<tr><td colspan='3'>Gagal memuat data.</td></tr>";
+        }
+    }
 
-    const msg = new SpeechSynthesisUtterance();
-    msg.text = teks;
-    msg.lang = 'id-ID';
-    msg.rate = 0.95;
-    msg.pitch = 1.0;
-
-    // Mencoba mencari suara bahasa Indonesia yang tersedia di sistem
-    const voices = window.speechSynthesis.getVoices();
-    const idVoice = voices.find(v => v.lang.includes('id-ID'));
-    if (idVoice) msg.voice = idVoice;
-
-    window.speechSynthesis.speak(msg);
-}
-
-// --- Tambahkan logika sisanya (updateStatusBadges, dll) di sini ---
-// Pastikan pemanggilan di dalam updateStatusBadges menggunakan panggilSuaraAI(teks);
-
+    loadData();
+    setInterval(loadData, 10000); // Update setiap 10 detik
 </script>
 </body>
 </html>
