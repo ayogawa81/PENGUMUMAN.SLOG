@@ -8,7 +8,7 @@
 <style>
 * {
 margin: 0; padding: 0; box-sizing: border-box;
-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+font-family: 'DengXian', 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 body {
 background-color: #0f172a; color: #f8fafc; height: 100vh;
@@ -354,6 +354,13 @@ if (shouldSave) saveDataToCloud();
 return;
 }
 
+// URUTKAN: Tanggal paling tua (paling awal) berada di posisi paling atas
+systemSchedules.sort((a, b) => {
+const dateA = new Date(`${a.tglMulai}T${(a.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
+const dateB = new Date(`${b.tglMulai}T${(b.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
+return dateA - dateB;
+});
+
 systemSchedules.forEach((item, index) => {
 const cleanTimeRange = item.waktu.replace(/\s+/g, '');
 const tr = document.createElement('tr');
@@ -486,6 +493,7 @@ renderSchedules(true);
 function updateStatusBadges() {
 const now = new Date();
 const waktuSekarangLengkap = now.getTime();
+let hasExpiredItems = false;
 
 document.querySelectorAll('#main-table-body tr[data-time]').forEach(row => {
 try {
@@ -519,16 +527,27 @@ const baseKey = `${startDateStr}-${endDateStr}-${timeRange}-${eventName}`;
 
 let appendPesertaText = (personnelName && personnelName !== '-') ? ` bersama ${personnelName}` : '';
 
+// FITUR AUTO HILANG KETIKA WAKTU SELESAI
 if (waktuSekarangLengkap > waktuSelesaiLengkap) {
-badge.textContent = 'Selesai';
-badge.className = 'status-badge status-done';
-
 const keySelesai = `${baseKey}-selesai`;
 if (!spokenSchedules.has(keySelesai)) {
 spokenSchedules.add(keySelesai);
 playBeepSound(() => {
 panggilSuaraAI(`Informasi, kegiatan ${eventName}${appendPesertaText} di lokasi ${roomName} telah selesai.`);
 });
+}
+
+// Hapus agenda yang sudah selesai dari database/list secara otomatis
+const expiredIndex = systemSchedules.findIndex(s => 
+s.tglMulai === startDateStr && 
+s.tglSelesai === endDateStr && 
+s.waktu.replace(/\s+/g, '') === timeRange && 
+s.kegiatan === eventName
+);
+
+if (expiredIndex !== -1) {
+systemSchedules.splice(expiredIndex, 1);
+hasExpiredItems = true;
 }
 
 } else if (waktuSekarangLengkap >= waktuMulaiLengkap && waktuSekarangLengkap <= waktuSelesaiLengkap) {
@@ -560,6 +579,11 @@ panggilSuaraAI(`Pemberitahuan, kegiatan ${eventName}${appendPesertaText} di loka
 console.error(error);
 }
 });
+
+// Jika ada agenda usai yang terhapus, render dan simpan ulang database
+if (hasExpiredItems) {
+renderSchedules(true);
+}
 }
 
 function toggleModal(show) {
