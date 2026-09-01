@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Display Jadwal Kegiatan Online Synchronized</title>
 
-<!-- LIBRARY SUARA KHUSUS SMART TV (TIZEN & ANDROID TV) -->
+<!-- LIBRARY SUARA UTAMA -->
 <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE_KEY"></script>
 
 <style>
@@ -56,7 +56,6 @@ tr:nth-child(odd) { background-color: #162238; }
 .status-waiting { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
 .status-done { background-color: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
 
-/* MODAL PANEL */
 .modal-overlay {
 position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.75);
 display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: all 0.3s ease;
@@ -78,7 +77,7 @@ display: flex; justify-content: center; align-items: center; z-index: 1000; opac
 .manager-item-text { font-size: 0.95rem; color: #cbd5e1; flex: 1; }
 .btn-delete { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
 
-/* OVERLAY UNLOCK AUDIO KHUSUS TV TIZEN & ANDROID TV */
+/* OVERLAY MEREKAT UNTUK TV TIZEN DAN ANDROID */
 #tizenAudioUnlocker {
 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
 background: rgba(15, 23, 42, 0.98); z-index: 99999;
@@ -91,9 +90,9 @@ color: white; text-align: center; padding: 20px;
 
 <div id="tizenAudioUnlocker">
 <h1 style="font-size: 2.5rem; margin-bottom: 15px; color: #3b82f6; font-weight: 800;">SISTEM MONITORING JADWAL</h1>
-<p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Klik tombol di bawah ini menggunakan remote TV atau mouse agar sistem suara aktif.</p>
-<button id="btnUnlockTizen" onclick="bukaKunciAudioTizen()" style="padding: 18px 45px; font-size: 1.5rem; font-weight: bold; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(16,185,129,0.4);">
-🔊 AKTIFKAN SUARA DISPLAY
+<p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">KLIK ATAU TEKAN 'OK' REMOT PADA TOMBOL DI BAWAH UNTUK MEMBUKA IZIN SUARA PEREMPUAN DI SMART TV.</p>
+<button id="btnUnlockTizen" onclick="bukaKunciAudioTizen()" style="padding: 22px 50px; font-size: 1.6rem; font-weight: bold; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(16,185,129,0.4);">
+🔊 AKTIFKAN SUARA PEREMPUAN
 </button>
 </div>
 
@@ -171,6 +170,9 @@ color: white; text-align: center; padding: 20px;
 </div>
 </div>
 
+<!-- ELEMEN AUDIO TERSEMBUNYI KHUSUS UNTUK MEMANGGIL VOICE GOOGLE NATIVE -->
+<audio id="globalAudioPlayer" style="display:none;"></audio>
+
 <script>
 const dbURL = "https://api.npoint.io/79fb87bf4e7964927964";
 
@@ -192,7 +194,11 @@ audioCtx.resume();
 }
 }
 
-// Inisialisasi engine ResponsiveVoice khusus TV
+// Buka kunci elemen HTML5 Audio
+const audioPlayer = document.getElementById('globalAudioPlayer');
+audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+audioPlayer.play().catch(e => console.log(e));
+
 if (window.responsiveVoice) {
 responsiveVoice.init();
 }
@@ -201,10 +207,10 @@ tizenAudioValid = true;
 document.getElementById('tizenAudioUnlocker').style.display = 'none';
 
 setTimeout(() => {
-panggilSuaraAI("Sistem suara display berhasil diaktifkan.");
+panggilSuaraAI("Sistem pengumuman suara wanita berhasil diaktifkan di layar TV Anda.");
 }, 300);
 } catch (e) {
-console.error("Error pada unlock audio:", e);
+console.error("Error unlock audio:", e);
 }
 }
 
@@ -262,7 +268,7 @@ if (callback) callback();
 if (callback) callback();
 }
 } catch (e) {
-console.error("Gagal membunyikan beep: ", e);
+console.error("Gagal bunyi beep: ", e);
 if (callback) callback();
 }
 }
@@ -270,24 +276,40 @@ if (callback) callback();
 function panggilSuaraAI(teks) {
 if (!tizenAudioValid) return;
 
-try {
+// METODE 1: PAKSA RESPONSIVEVOICE MENGGUNAKAN INDONESIAN FEMALE
 if (window.responsiveVoice) {
-// Menggunakan voice "Indonesian Female" yang didukung penuh di OS TV
 responsiveVoice.speak(teks, "Indonesian Female", {
-pitch: 1,
+pitch: 1.0,
 rate: 0.9,
-volume: 1
+volume: 1,
+onerror: function() {
+jalurCadanganGoogleTTS(teks);
+}
 });
 } else {
-jalurCadanganTizenLokal(teks);
-}
-} catch (error) {
-console.error("Gagal memuat ResponsiveVoice, beralih ke cadangan...", error);
-jalurCadanganTizenLokal(teks);
+jalurCadanganGoogleTTS(teks);
 }
 }
 
-function jalurCadanganTizenLokal(teks) {
+// METODE 2 (FALLBACK TV): GOOGLE DIRECT TRANSLATE VOICE (SUARA PEREMPUAN NATIVE)
+function jalurCadanganGoogleTTS(teks) {
+try {
+const encodedText = encodeURIComponent(teks);
+const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=id&client=tw-ob`;
+
+const audioPlayer = document.getElementById('globalAudioPlayer');
+audioPlayer.src = url;
+audioPlayer.play().catch(err => {
+console.log("Fallback Google gagal, beralih ke SpeechSynthesis Webview...", err);
+jalurCadanganWebviewTV(teks);
+});
+} catch (e) {
+jalurCadanganWebviewTV(teks);
+}
+}
+
+// METODE 3 (FALLBACK TERAKHIR): MEMILIH HANYA VOICE DENGAN NAMA FEMALE ATAU ID-ID
+function jalurCadanganWebviewTV(teks) {
 try {
 if ('speechSynthesis' in window) {
 window.speechSynthesis.cancel();
@@ -295,12 +317,20 @@ window.speechSynthesis.cancel();
 const speech = new SpeechSynthesisUtterance(teks);
 speech.lang = 'id-ID';
 speech.rate = 0.9;
-speech.pitch = 1.1;
+speech.pitch = 1.2; // Pitch dinaikkan agar terdengar lebih feminine jika terjebak di voice default
+
+const voices = window.speechSynthesis.getVoices();
+const femaleVoice = voices.find(v => (v.lang.includes('id') || v.lang.includes('ID')) && 
+(v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('gadis') || v.name.toLowerCase().includes('wanita') || v.name.toLowerCase().includes('google')));
+
+if (femaleVoice) {
+speech.voice = femaleVoice;
+}
 
 window.speechSynthesis.speak(speech);
 }
 } catch (e) {
-console.error("Jalur cadangan gagal:", e);
+console.error("Semua metode audio gagal:", e);
 }
 }
 
@@ -313,7 +343,7 @@ systemSchedules = await response.json();
 if (!Array.isArray(systemSchedules)) systemSchedules = [];
 renderSchedules(false);
 } catch (e) {
-console.error("Gagal membaca database cloud.");
+console.error("Gagal baca database cloud.");
 systemSchedules = JSON.parse(localStorage.getItem("LOCAL_JWS_DATA")) || [];
 renderSchedules(false);
 }
@@ -328,7 +358,7 @@ headers: { "Content-Type": "application/json" },
 body: JSON.stringify(systemSchedules)
 });
 } catch (e) {
-console.error("Gagal push data ke database server.", e);
+console.error("Gagal push ke cloud.", e);
 }
 }
 
@@ -432,7 +462,7 @@ const personel = document.getElementById('inputPersonel').value.trim();
 const lokasi = document.getElementById('inputLokasi').value.trim();
 
 if (!tglMulai || !tglSelesai || !waktu || !kegiatan || !lokasi || !waktu.includes('-')) {
-return alert("Isi dengan benar! Pastikan tanggal dipilih dan format waktu: 08:30 - 12:00");
+return alert("Isi dengan benar! Format waktu: 08:30 - 12:00");
 }
 
 if (new Date(tglMulai) > new Date(tglSelesai)) {
