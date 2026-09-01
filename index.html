@@ -191,7 +191,7 @@ document.getElementById('tizenAudioUnlocker').style.display = 'none';
 console.log("Audio Engine Berhasil Di-unlock!");
 
 setTimeout(() => {
-responsiveVoice.speak("Sistem monitoring suara display telah diaktifkan secara sukses.", "Indonesian Female", { volume: 1, rate: 0.95 });
+panggilSuaraAI("Sistem monitoring suara display telah diaktifkan secara sukses.");
 }, 300);
 }).catch(err => {
 alert("Gagal mengaktifkan Audio. Harap klik ulang tombol!");
@@ -254,23 +254,20 @@ function panggilSuaraAI(teks) {
 if (!tizenAudioValid) return;
 
 try {
-console.log("Mencoba Voice RSS (Suara Wanita): " + teks);
-const player = document.getElementById('globalAudioPlayer');
-const apiKey = "1dcaf4a9430148c3acf148035b135cbf";
-const url = `https://api.voicerss.org/?key=${apiKey}&hl=id-id&v=Intan&c=mp3&f=16khz_16bit_stereo&src=${encodeURIComponent(teks)}`;
-
-player.src = url;
-player.load();
-
-setTimeout(() => {
-player.play().catch(err => {
-console.warn("Voice RSS diblokir Tizen, beralih ke jalur cadangan lokal...", err);
+if (typeof responsiveVoice !== 'undefined') {
+console.log("Menggunakan ResponsiveVoice (Suara Wanita)...");
+responsiveVoice.speak(teks, "Indonesian Female", {
+pitch: 1.1,
+rate: 0.95,
+onerror: function() {
 jalurCadanganTizenLokal(teks);
+}
 });
-}, 300);
-
+} else {
+jalurCadanganTizenLokal(teks);
+}
 } catch (error) {
-console.error("Gagal memuat Voice RSS, mencoba jalur cadangan...", error);
+console.error("Gagal memuat ResponsiveVoice, beralih ke cadangan...", error);
 jalurCadanganTizenLokal(teks);
 }
 }
@@ -278,18 +275,22 @@ jalurCadanganTizenLokal(teks);
 function jalurCadanganTizenLokal(teks) {
 try {
 if ('speechSynthesis' in window) {
-console.log("Menjalankan TTS Cadangan Internal TV...");
+console.log("Menjalankan TTS Cadangan Internal TV/Browser...");
 window.speechSynthesis.cancel();
 
 const speech = new SpeechSynthesisUtterance(teks);
 speech.lang = 'id-ID';
 speech.rate = 0.9;
-speech.pitch = 1.1;
+speech.pitch = 1.3; // Nada tinggi untuk memastikan karakter suara wanita
 
 const voices = window.speechSynthesis.getVoices();
 const femaleVoice = voices.find(voice =>
 (voice.lang.includes('id') || voice.lang.includes('ID')) &&
-(voice.name.toLowerCase().includes('female') || voice.name.toLowerCase().includes('zira') || voice.name.toLowerCase().includes('google'))
+(voice.name.toLowerCase().includes('female') || 
+ voice.name.toLowerCase().includes('wanita') || 
+ voice.name.toLowerCase().includes('zira') || 
+ voice.name.toLowerCase().includes('gadis') ||
+ voice.name.toLowerCase().includes('google'))
 );
 
 if (femaleVoice) {
@@ -298,7 +299,7 @@ speech.voice = femaleVoice;
 
 window.speechSynthesis.speak(speech);
 } else {
-console.error("Browser TV ini benar-benar tidak mendukung Audio Web Speech.");
+console.error("Browser TV tidak mendukung Web Speech API.");
 }
 } catch (e) {
 console.error("Jalur cadangan pun gagal:", e);
@@ -354,7 +355,6 @@ if (shouldSave) saveDataToCloud();
 return;
 }
 
-// URUTKAN: Tanggal paling tua (paling awal) berada di posisi paling atas
 systemSchedules.sort((a, b) => {
 const dateA = new Date(`${a.tglMulai}T${(a.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
 const dateB = new Date(`${b.tglMulai}T${(b.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
@@ -527,7 +527,6 @@ const baseKey = `${startDateStr}-${endDateStr}-${timeRange}-${eventName}`;
 
 let appendPesertaText = (personnelName && personnelName !== '-') ? ` bersama ${personnelName}` : '';
 
-// FITUR AUTO HILANG KETIKA WAKTU SELESAI
 if (waktuSekarangLengkap > waktuSelesaiLengkap) {
 const keySelesai = `${baseKey}-selesai`;
 if (!spokenSchedules.has(keySelesai)) {
@@ -537,7 +536,6 @@ panggilSuaraAI(`Informasi, kegiatan ${eventName}${appendPesertaText} di lokasi $
 });
 }
 
-// Hapus agenda yang sudah selesai dari database/list secara otomatis
 const expiredIndex = systemSchedules.findIndex(s => 
 s.tglMulai === startDateStr && 
 s.tglSelesai === endDateStr && 
@@ -580,7 +578,6 @@ console.error(error);
 }
 });
 
-// Jika ada agenda usai yang terhapus, render dan simpan ulang database
 if (hasExpiredItems) {
 renderSchedules(true);
 }
