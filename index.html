@@ -170,7 +170,7 @@ color: white; text-align: center; padding: 20px;
 </div>
 </div>
 
-<audio id="globalAudioPlayer" style="display:none;"></audio>
+<audio id="globalAudioPlayer" preload="auto" style="display:none;"></audio>
 
 <script>
 const dbURL = "https://api.npoint.io/79fb87bf4e7964927964";
@@ -183,15 +183,20 @@ let spokenSchedules = new Set();
 let tizenAudioValid = false;
 let audioCtx = null;
 
-function bukaKunciAudioTizen() {
-try {
+// Pemicu Bangunkan Audio Context TV secara Berkala
+function reviveAudioContext() {
+if (!audioCtx) {
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-if (AudioContextClass) {
-audioCtx = new AudioContextClass();
-if (audioCtx.state === 'suspended') {
+if (AudioContextClass) audioCtx = new AudioContextClass();
+}
+if (audioCtx && audioCtx.state === 'suspended') {
 audioCtx.resume();
 }
 }
+
+function bukaKunciAudioTizen() {
+try {
+reviveAudioContext();
 
 const audioPlayer = document.getElementById('globalAudioPlayer');
 audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
@@ -203,7 +208,7 @@ if (window.responsiveVoice) responsiveVoice.init();
 setTimeout(() => {
 panggilSuaraAI("Sistem pengumuman suara TV berhasil diaktifkan.");
 }, 300);
-}).catch(e => {
+}).catch(() => {
 tizenAudioValid = true;
 document.getElementById('tizenAudioUnlocker').style.display = 'none';
 if (window.responsiveVoice) responsiveVoice.init();
@@ -233,14 +238,7 @@ updateStatusBadges();
 
 function playBeepSound(callback) {
 try {
-if (!audioCtx) {
-const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-if (AudioContextClass) audioCtx = new AudioContextClass();
-}
-
-if (audioCtx && audioCtx.state === 'suspended') {
-audioCtx.resume();
-}
+reviveAudioContext();
 
 if (audioCtx) {
 function pembuatBeep(waktuMulai, frekuensi, durasi) {
@@ -276,9 +274,11 @@ if (callback) callback();
 
 function panggilSuaraAI(teks) {
 if (!tizenAudioValid) return;
+reviveAudioContext();
 
+// Opsi 1: ResponsiveVoice
 if (window.responsiveVoice) {
-responsiveVoice.speak(teks, "Indonesian Female", {
+responsiveVoice.speak(teks, "Indonesian Male", {
 pitch: 1.0,
 rate: 0.9,
 volume: 1,
@@ -314,13 +314,13 @@ window.speechSynthesis.cancel();
 const speech = new SpeechSynthesisUtterance(teks);
 speech.lang = 'id-ID';
 speech.rate = 0.9;
-speech.pitch = 1.1;
+speech.pitch = 1.0;
 
 const voices = window.speechSynthesis.getVoices();
-const femaleVoice = voices.find(v => (v.lang.includes('id') || v.lang.includes('ID')));
+const targetVoice = voices.find(v => (v.lang.includes('id') || v.lang.includes('ID')));
 
-if (femaleVoice) {
-speech.voice = femaleVoice;
+if (targetVoice) {
+speech.voice = targetVoice;
 }
 
 window.speechSynthesis.speak(speech);
