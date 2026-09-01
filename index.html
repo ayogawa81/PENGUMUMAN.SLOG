@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Display Pengumuman Slog</title>
-<script src="https://code.responsivevoice.org/voice.js"></script>
+<!-- LIBRARY UTAMA VOICE PEREMPUAN INDONESIA -->
+<script src="https://code.responsivevoice.org/voice.js?key=FREE_KEY"></script>
 <style>
 * {
 margin: 0; padding: 0; box-sizing: border-box;
@@ -87,13 +88,11 @@ color: white; text-align: center; padding: 20px;
 
 <div id="tizenAudioUnlocker">
 <h1 style="font-size: 2.5rem; margin-bottom: 15px; color: #3b82f6; font-weight: 800;">SISTEM MONITORING PENGUMUMAN SLOG</h1>
-<p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Harap klik tombol di bawah ini menggunakan remote atau mouse agar TV mengizinkan suara pengumuman wanita aktif.</p>
+<p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Klik tombol di bawah ini untuk mengaktifkan modul suara perempuan Indonesia.</p>
 <button onclick="bukaKunciAudioTizen()" style="padding: 18px 45px; font-size: 1.5rem; font-weight: bold; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(16,185,129,0.4);">
-🔊 AKTIFKAN SUARA DISPLAY
+🔊 AKTIFKAN SUARA PEREMPUAN
 </button>
 </div>
-
-<audio id="globalAudioPlayer" preload="auto"></audio>
 
 <header>
 <div class="logo-title">
@@ -180,25 +179,13 @@ let spokenSchedules = new Set();
 let tizenAudioValid = false;
 
 function bukaKunciAudioTizen() {
-try {
-const player = document.getElementById('globalAudioPlayer');
-player.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+  tizenAudioValid = true;
+  document.getElementById('tizenAudioUnlocker').style.display = 'none';
 
-player.play().then(() => {
-tizenAudioValid = true;
-document.getElementById('tizenAudioUnlocker').style.display = 'none';
-console.log("Audio Engine Berhasil Di-unlock!");
-
-setTimeout(() => {
-panggilSuaraWanita("Sistem pengumuman suara wanita telah aktif.");
-}, 300);
-}).catch(err => {
-alert("Gagal mengaktifkan Audio. Harap klik ulang tombol!");
-console.error(err);
-});
-} catch (e) {
-console.error(e);
-}
+  // Tes Suara Perempuan
+  playBeepSound(() => {
+    panggilSuaraWanita("Sistem pengumuman suara perempuan Indonesia berhasil diaktifkan.");
+  });
 }
 
 function updateDateTime() {
@@ -244,82 +231,26 @@ setTimeout(() => {
 if (callback) callback();
 }, 550);
 } catch (e) {
-console.error("Gagal membunyikan beep: ", e);
 if (callback) callback();
 }
 }
 
-// METODE UTAMA: MEMAKSA PENGGUNAAN SUARA PEREMPUAN
+// FUNGSI UTAMA SUARA PEREMPUAN
 function panggilSuaraWanita(teks) {
 if (!tizenAudioValid) return;
 
-// Jalur 1: ResponsiveVoice (Suara Wanita Indonesia)
+// MENGGUNAKAN RESPONSIVEVOICE MURNI (VOICE PEREMPUAN ASLI INDONESIA)
 if (typeof responsiveVoice !== 'undefined') {
-responsiveVoice.cancel();
-responsiveVoice.speak(teks, "Indonesian Female", {
-pitch: 1,
-rate: 0.9,
-volume: 1,
-onerror: function() {
-jalurGoogleTTSWanita(teks);
-}
-});
-return;
-}
-
-jalurGoogleTTSWanita(teks);
-}
-
-// Jalur 2: Google Translate TTS Engine (Perempuan Asli Google Indonesia)
-function jalurGoogleTTSWanita(teks) {
-try {
-const player = document.getElementById('globalAudioPlayer');
-const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(teks)}&tl=id&client=tw-ob`;
-
-player.src = googleUrl;
-player.load();
-
-player.play().catch(err => {
-console.warn("Google TTS diblokir, beralih ke Web Speech API khusus Suara Wanita...", err);
-jalurWebSpeechWanita(teks);
-});
-} catch (e) {
-jalurWebSpeechWanita(teks);
-}
-}
-
-// Jalur 3: Web Speech API (Filter Khusus Suara Perempuan Sistem)
-function jalurWebSpeechWanita(teks) {
-try {
-if ('speechSynthesis' in window) {
-window.speechSynthesis.cancel();
-
-const speech = new SpeechSynthesisUtterance(teks);
-speech.lang = 'id-ID';
-speech.rate = 0.9;
-speech.pitch = 1.2; // Pitch dinaikkan agar terdengar lebih wanita
-
-const voices = window.speechSynthesis.getVoices();
-
-// Cari voice yang explicitly memuat kata female/wanita/id-id
-let selectedVoice = voices.find(v => 
-(v.lang.includes('id') || v.lang.includes('ID')) && 
-(v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('wanita') || v.name.toLowerCase().includes('gadis') || v.name.toLowerCase().includes('indonesia'))
-);
-
-// Jika tidak ada nama female spesifik, pilih voice ID pertama dan tingkatkan pitch-nya
-if (!selectedVoice) {
-selectedVoice = voices.find(v => v.lang.includes('id') || v.lang.includes('ID'));
-}
-
-if (selectedVoice) {
-speech.voice = selectedVoice;
-}
-
-window.speechSynthesis.speak(speech);
-}
-} catch (e) {
-console.error("Seluruh mesin audio gagal:", e);
+  responsiveVoice.cancel();
+  responsiveVoice.speak(teks, "Indonesian Female", {
+    pitch: 1.0,
+    rate: 0.9,
+    volume: 1
+  });
+} else {
+  // FALLBACK STREAM GOOGLE TTS PEREMPUAN
+  const audio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(teks)}&tl=id&client=tw-ob`);
+  audio.play();
 }
 }
 
@@ -332,7 +263,6 @@ systemSchedules = await response.json();
 if (!Array.isArray(systemSchedules)) systemSchedules = [];
 renderSchedules(false);
 } catch (e) {
-console.error("Gagal membaca database cloud.");
 systemSchedules = JSON.parse(localStorage.getItem("LOCAL_JWS_DATA")) || [];
 renderSchedules(false);
 }
@@ -347,7 +277,7 @@ headers: { "Content-Type": "application/json" },
 body: JSON.stringify(systemSchedules)
 });
 } catch (e) {
-console.error("Gagal push data ke database server.", e);
+console.error(e);
 }
 }
 
@@ -451,7 +381,7 @@ const personel = document.getElementById('inputPersonel').value.trim();
 const lokasi = document.getElementById('inputLokasi').value.trim();
 
 if (!tglMulai || !tglSelesai || !waktu || !kegiatan || !lokasi || !waktu.includes('-')) {
-return alert("Isi dengan benar! Pastikan tanggal dipilih dan format waktu: 08:30 - 12:00");
+return alert("Isi dengan benar! Format waktu: 08:30 - 12:00");
 }
 
 if (new Date(tglMulai) > new Date(tglSelesai)) {
