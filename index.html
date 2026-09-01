@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Display Jadwal Kegiatan Online Synchronized</title>
 
-<!-- LIBRARY SUARA UTAMA -->
-<script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE_KEY"></script>
-
 <style>
 * {
 margin: 0; padding: 0; box-sizing: border-box;
@@ -170,8 +167,6 @@ color: white; text-align: center; padding: 20px;
 </div>
 </div>
 
-<audio id="globalAudioPlayer" preload="auto" style="display:none;"></audio>
-
 <script>
 const dbURL = "https://api.npoint.io/79fb87bf4e7964927964";
 
@@ -183,7 +178,7 @@ let spokenSchedules = new Set();
 let tizenAudioValid = false;
 let audioCtx = null;
 
-// Pemicu Bangunkan Audio Context TV secara Berkala
+// Pemicu Audio Context Bawaan
 function reviveAudioContext() {
 if (!audioCtx) {
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -198,22 +193,19 @@ function bukaKunciAudioTizen() {
 try {
 reviveAudioContext();
 
-const audioPlayer = document.getElementById('globalAudioPlayer');
-audioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
-audioPlayer.play().then(() => {
+// Inisialisasi awal Web Speech API TV
+if ('speechSynthesis' in window) {
+window.speechSynthesis.cancel();
+const dummyUtterance = new SpeechSynthesisUtterance('');
+window.speechSynthesis.speak(dummyUtterance);
+}
+
 tizenAudioValid = true;
 document.getElementById('tizenAudioUnlocker').style.display = 'none';
-if (window.responsiveVoice) responsiveVoice.init();
 
 setTimeout(() => {
 panggilSuaraAI("Sistem pengumuman suara TV berhasil diaktifkan.");
 }, 300);
-}).catch(() => {
-tizenAudioValid = true;
-document.getElementById('tizenAudioUnlocker').style.display = 'none';
-if (window.responsiveVoice) responsiveVoice.init();
-panggilSuaraAI("Sistem pengumuman suara TV berhasil diaktifkan.");
-});
 } catch (e) {
 console.error("Error unlock audio TV:", e);
 document.getElementById('tizenAudioUnlocker').style.display = 'none';
@@ -272,49 +264,19 @@ if (callback) callback();
 }
 }
 
+// Fungsi Utama Pemanggilan Suara Menggunakan Web Speech API Native Smart TV
 function panggilSuaraAI(teks) {
 if (!tizenAudioValid) return;
-reviveAudioContext();
 
-// Opsi 1: ResponsiveVoice
-if (window.responsiveVoice) {
-responsiveVoice.speak(teks, "Indonesian Male", {
-pitch: 1.0,
-rate: 0.9,
-volume: 1,
-onerror: function() {
-jalurCadanganGoogleTTS(teks);
-}
-});
-} else {
-jalurCadanganGoogleTTS(teks);
-}
-}
-
-function jalurCadanganGoogleTTS(teks) {
-try {
-const encodedText = encodeURIComponent(teks);
-const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=id&client=tw-ob`;
-
-const audioPlayer = document.getElementById('globalAudioPlayer');
-audioPlayer.src = url;
-audioPlayer.play().catch(() => {
-jalurCadanganWebviewTV(teks);
-});
-} catch (e) {
-jalurCadanganWebviewTV(teks);
-}
-}
-
-function jalurCadanganWebviewTV(teks) {
 try {
 if ('speechSynthesis' in window) {
-window.speechSynthesis.cancel();
+window.speechSynthesis.cancel(); // Hentikan antrean suara sebelumnya
 
 const speech = new SpeechSynthesisUtterance(teks);
 speech.lang = 'id-ID';
-speech.rate = 0.9;
+speech.rate = 0.85;
 speech.pitch = 1.0;
+speech.volume = 1.0;
 
 const voices = window.speechSynthesis.getVoices();
 const targetVoice = voices.find(v => (v.lang.includes('id') || v.lang.includes('ID')));
@@ -326,7 +288,7 @@ speech.voice = targetVoice;
 window.speechSynthesis.speak(speech);
 }
 } catch (e) {
-console.error("Audio error:", e);
+console.error("Audio WebSpeech error:", e);
 }
 }
 
@@ -618,6 +580,13 @@ document.getElementById('inputPersonel').value = '';
 document.getElementById('inputLokasi').value = '';
 }
 document.getElementById('settingModal').classList.toggle('active', show);
+}
+
+// Inisialisasi daftar suara native peramban
+if ('speechSynthesis' in window) {
+window.speechSynthesis.onvoiceschanged = () => {
+window.speechSynthesis.getVoices();
+};
 }
 
 setInterval(updateDateTime, 1000);
