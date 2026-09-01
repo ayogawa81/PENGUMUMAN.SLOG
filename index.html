@@ -74,7 +74,6 @@ display: flex; justify-content: center; align-items: center; z-index: 1000; opac
 .manager-item-text { font-size: 0.95rem; color: #cbd5e1; flex: 1; }
 .btn-delete { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
 
-/* OVERLAY UNLOCK SUARA KHUSUS SMART TV */
 #tizenAudioUnlocker {
 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
 background: rgba(15, 23, 42, 0.98); z-index: 99999;
@@ -87,7 +86,7 @@ color: white; text-align: center; padding: 20px;
 
 <div id="tizenAudioUnlocker">
 <h1 style="font-size: 2.5rem; margin-bottom: 15px; color: #3b82f6; font-weight: 800;">SISTEM MONITORING JADWAL</h1>
-<p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Arahkan remote TV lalu tekan OK pada tombol hijau di bawah untuk mengaktifkan izin suara TV.</p>
+<p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Tekan tombol OK / Enter pada remote TV untuk mengaktifkan izin suara.</p>
 <button id="btnUnlockTizen" onclick="bukaKunciAudioTizen()" style="padding: 22px 50px; font-size: 1.6rem; font-weight: bold; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(16,185,129,0.4);" autofocus>
 🔊 KLIK / TEKAN OK UNTUK AKTIFKAN SUARA TV
 </button>
@@ -175,14 +174,15 @@ let currentHours = "00";
 let currentMinutes = "00";
 let editIndex = -1;
 let spokenSchedules = new Set();
-let tizenAudioValid = false;
 let audioCtx = null;
 
-// Pemicu Audio Context Bawaan
-function reviveAudioContext() {
+// Mengaktifkan Hardware Audio Context TV secara langsung
+function initAudioEngine() {
 if (!audioCtx) {
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-if (AudioContextClass) audioCtx = new AudioContextClass();
+if (AudioContextClass) {
+audioCtx = new AudioContextClass();
+}
 }
 if (audioCtx && audioCtx.state === 'suspended') {
 audioCtx.resume();
@@ -190,26 +190,68 @@ audioCtx.resume();
 }
 
 function bukaKunciAudioTizen() {
-try {
-reviveAudioContext();
+initAudioEngine();
+document.getElementById('tizenAudioUnlocker').style.display = 'none';
 
-// Inisialisasi awal Web Speech API TV
-if ('speechSynthesis' in window) {
-window.speechSynthesis.cancel();
-const dummyUtterance = new SpeechSynthesisUtterance('');
-window.speechSynthesis.speak(dummyUtterance);
+// Nada konfirmasi aktivasi suara
+playChimeNotification([523.25, 659.25, 783.99]);
 }
 
-tizenAudioValid = true;
-document.getElementById('tizenAudioUnlocker').style.display = 'none';
+// Generator Suara Nada Murni (Bypass Sistem TTS TV)
+function playTone(freq, type, duration, delay = 0) {
+initAudioEngine();
+if (!audioCtx) return;
 
 setTimeout(() => {
-panggilSuaraAI("Sistem pengumuman suara TV berhasil diaktifkan.");
-}, 300);
+try {
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+
+osc.type = type;
+osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+
+osc.start(audioCtx.currentTime);
+osc.stop(audioCtx.currentTime + duration);
 } catch (e) {
-console.error("Error unlock audio TV:", e);
-document.getElementById('tizenAudioUnlocker').style.display = 'none';
-tizenAudioValid = true;
+console.error(e);
+}
+}, delay);
+}
+
+// Pola Bel Pengumuman Otomatis (Aksen Bell TV)
+function playChimeNotification(freqs = [440, 554.37, 659.25]) {
+freqs.forEach((f, i) => {
+playTone(f, 'sine', 0.8, i * 250);
+});
+}
+
+// Fungsi Pemanggilan Pengumuman
+function panggilSuaraAI(teks) {
+// 1. Jalankan Sirine/Chime Notifikasi TV
+playChimeNotification([523.25, 659.25, 783.99, 1046.50]);
+
+// 2. Coba eksekusi Speech Synthesis jika chip TV mendukung
+if ('speechSynthesis' in window) {
+try {
+window.speechSynthesis.cancel();
+const speech = new SpeechSynthesisUtterance(teks);
+speech.lang = 'id-ID';
+speech.rate = 0.85;
+
+const voices = window.speechSynthesis.getVoices();
+const idVoice = voices.find(v => v.lang.includes('id') || v.lang.includes('ID'));
+if (idVoice) speech.voice = idVoice;
+
+setTimeout(() => {
+window.speechSynthesis.speak(speech);
+}, 1200);
+} catch (e) {}
 }
 }
 
@@ -226,70 +268,6 @@ document.getElementById('date').textContent = now.toLocaleDateString('id-ID', op
 
 updateStatusBadges();
 } catch(err) { console.error(err); }
-}
-
-function playBeepSound(callback) {
-try {
-reviveAudioContext();
-
-if (audioCtx) {
-function pembuatBeep(waktuMulai, frekuensi, durasi) {
-const oscillator = audioCtx.createOscillator();
-const gainNode = audioCtx.createGain();
-
-oscillator.type = 'sine';
-oscillator.frequency.value = frekuensi;
-
-gainNode.gain.setValueAtTime(0.3, waktuMulai);
-gainNode.gain.exponentialRampToValueAtTime(0.00001, waktuMulai + durasi);
-
-oscillator.connect(gainNode);
-gainNode.connect(audioCtx.destination);
-
-oscillator.start(waktuMulai);
-oscillator.stop(waktuMulai + durasi);
-}
-
-pembuatBeep(audioCtx.currentTime, 880, 0.15);
-pembuatBeep(audioCtx.currentTime + 0.2, 1046.5, 0.2);
-
-setTimeout(() => {
-if (callback) callback();
-}, 550);
-} else {
-if (callback) callback();
-}
-} catch (e) {
-if (callback) callback();
-}
-}
-
-// Fungsi Utama Pemanggilan Suara Menggunakan Web Speech API Native Smart TV
-function panggilSuaraAI(teks) {
-if (!tizenAudioValid) return;
-
-try {
-if ('speechSynthesis' in window) {
-window.speechSynthesis.cancel(); // Hentikan antrean suara sebelumnya
-
-const speech = new SpeechSynthesisUtterance(teks);
-speech.lang = 'id-ID';
-speech.rate = 0.85;
-speech.pitch = 1.0;
-speech.volume = 1.0;
-
-const voices = window.speechSynthesis.getVoices();
-const targetVoice = voices.find(v => (v.lang.includes('id') || v.lang.includes('ID')));
-
-if (targetVoice) {
-speech.voice = targetVoice;
-}
-
-window.speechSynthesis.speak(speech);
-}
-} catch (e) {
-console.error("Audio WebSpeech error:", e);
-}
 }
 
 async function loadDataFromCloud() {
@@ -507,16 +485,13 @@ const waktuSelesaiLengkap = new Date(endDateStr).setHours(jamSelesai, menitSeles
 
 badge.className = 'status-badge';
 const baseKey = `${startDateStr}-${endDateStr}-${timeRange}-${eventName}`;
-
 let appendPesertaText = (personnelName && personnelName !== '-') ? ` bersama ${personnelName}` : '';
 
 if (waktuSekarangLengkap > waktuSelesaiLengkap) {
 const keySelesai = `${baseKey}-selesai`;
 if (!spokenSchedules.has(keySelesai)) {
 spokenSchedules.add(keySelesai);
-playBeepSound(() => {
 panggilSuaraAI(`Informasi, kegiatan ${eventName}${appendPesertaText} di lokasi ${roomName} telah selesai.`);
-});
 }
 
 const expiredIndex = systemSchedules.findIndex(s => 
@@ -538,9 +513,7 @@ badge.className = 'status-badge status-ongoing';
 const keyBerlangsung = `${baseKey}-berlangsung`;
 if (!spokenSchedules.has(keyBerlangsung)) {
 spokenSchedules.add(keyBerlangsung);
-playBeepSound(() => {
 panggilSuaraAI(`Perhatian, kegiatan ${eventName}${appendPesertaText} di lokasi ${roomName} sedang berlangsung.`);
-});
 }
 
 } else {
@@ -550,9 +523,7 @@ badge.className = 'status-badge status-waiting';
 const keyMenunggu = `${baseKey}-menunggu`;
 if (!spokenSchedules.has(keyMenunggu)) {
 spokenSchedules.add(keyMenunggu);
-playBeepSound(() => {
 panggilSuaraAI(`Pemberitahuan, kegiatan ${eventName}${appendPesertaText} di lokasi ${roomName} dalam status menunggu.`);
-});
 }
 }
 
@@ -580,13 +551,6 @@ document.getElementById('inputPersonel').value = '';
 document.getElementById('inputLokasi').value = '';
 }
 document.getElementById('settingModal').classList.toggle('active', show);
-}
-
-// Inisialisasi daftar suara native peramban
-if ('speechSynthesis' in window) {
-window.speechSynthesis.onvoiceschanged = () => {
-window.speechSynthesis.getVoices();
-};
 }
 
 setInterval(updateDateTime, 1000);
