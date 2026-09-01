@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Display Jadwal Kegiatan Online Synchronized</title>
-<script src="https://code.responsivevoice.org/voice.js"></script>
 <style>
 * {
 margin: 0; padding: 0; box-sizing: border-box;
@@ -88,8 +87,8 @@ color: white; text-align: center; padding: 20px;
 
 <div id="tizenAudioUnlocker">
 <h1 style="font-size: 2.5rem; margin-bottom: 15px; color: #3b82f6; font-weight: 800;">SISTEM MONITORING JADWAL</h1>
-<p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Harap klik tombol di bawah ini menggunakan remote atau mouse agar TV Tizen & Browser mengizinkan suara pengumuman AI aktif.</p>
-<button onclick="bukaKunciAudioTizen()" style="padding: 18px 45px; font-size: 1.5rem; font-weight: bold; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(16,185,129,0.4);">
+<p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Harap klik tombol di bawah ini menggunakan remote atau mouse agar TV Tizen mengizinkan suara aktif.</p>
+<button id="btnUnlockTizen" onclick="bukaKunciAudioTizen()" style="padding: 18px 45px; font-size: 1.5rem; font-weight: bold; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(16,185,129,0.4);">
 🔊 AKTIFKAN SUARA DISPLAY
 </button>
 </div>
@@ -179,26 +178,36 @@ let currentMinutes = "00";
 let editIndex = -1;
 let spokenSchedules = new Set();
 let tizenAudioValid = false;
+let audioCtx = null;
 
 function bukaKunciAudioTizen() {
 try {
+// Inisialisasi AudioContext dengan interaksi pengguna
+const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+if (AudioContextClass) {
+audioCtx = new AudioContextClass();
+if (audioCtx.state === 'suspended') {
+audioCtx.resume();
+}
+}
+
 const player = document.getElementById('globalAudioPlayer');
 player.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
 
 player.play().then(() => {
 tizenAudioValid = true;
 document.getElementById('tizenAudioUnlocker').style.display = 'none';
-console.log("Audio Engine Berhasil Di-unlock!");
+console.log("Audio Engine Tizen Berhasil Di-unlock!");
 
 setTimeout(() => {
-panggilSuaraAI("Sistem monitoring suara display telah diaktifkan secara sukses.");
-}, 300);
+panggilSuaraAI("Sistem suara display berhasil diaktifkan.");
+}, 200);
 }).catch(err => {
-alert("Gagal mengaktifkan Audio. Harap klik ulang tombol!");
-console.error(err);
+console.error("Gagal unlock audio:", err);
+alert("Tekan tombol sekali lagi menggunakan remote TV!");
 });
 } catch (e) {
-console.error(e);
+console.error("Error pada unlock audio:", e);
 }
 }
 
@@ -219,8 +228,16 @@ updateStatusBadges();
 
 function playBeepSound(callback) {
 try {
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+if (!audioCtx) {
+const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+if (AudioContextClass) audioCtx = new AudioContextClass();
+}
 
+if (audioCtx && audioCtx.state === 'suspended') {
+audioCtx.resume();
+}
+
+if (audioCtx) {
 function pembuatBeep(waktuMulai, frekuensi, durasi) {
 const oscillator = audioCtx.createOscillator();
 const gainNode = audioCtx.createGain();
@@ -244,6 +261,9 @@ pembuatBeep(audioCtx.currentTime + 0.2, 1046.5, 0.2);
 setTimeout(() => {
 if (callback) callback();
 }, 550);
+} else {
+if (callback) callback();
+}
 } catch (e) {
 console.error("Gagal membunyikan beep: ", e);
 if (callback) callback();
@@ -254,20 +274,22 @@ function panggilSuaraAI(teks) {
 if (!tizenAudioValid) return;
 
 try {
-if (typeof responsiveVoice !== 'undefined') {
-console.log("Menggunakan ResponsiveVoice (Suara Wanita)...");
-responsiveVoice.speak(teks, "Indonesian Female", {
-pitch: 1.1,
-rate: 0.95,
-onerror: function() {
+const player = document.getElementById('globalAudioPlayer');
+// Menggunakan Google TTS Engine Stream Khusus Bahasa Indonesia (Suara Wanita)
+const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(teks)}&tl=id&client=tw-ob`;
+
+player.src = url;
+player.load();
+
+const playPromise = player.play();
+if (playPromise !== undefined) {
+playPromise.catch(error => {
+console.warn("Google TTS terhalang, beralih ke metode lokal...", error);
 jalurCadanganTizenLokal(teks);
-}
 });
-} else {
-jalurCadanganTizenLokal(teks);
 }
 } catch (error) {
-console.error("Gagal memuat ResponsiveVoice, beralih ke cadangan...", error);
+console.error("Gagal memuat suara utama, memakai jalur cadangan...", error);
 jalurCadanganTizenLokal(teks);
 }
 }
@@ -275,13 +297,12 @@ jalurCadanganTizenLokal(teks);
 function jalurCadanganTizenLokal(teks) {
 try {
 if ('speechSynthesis' in window) {
-console.log("Menjalankan TTS Cadangan Internal TV/Browser...");
 window.speechSynthesis.cancel();
 
 const speech = new SpeechSynthesisUtterance(teks);
 speech.lang = 'id-ID';
 speech.rate = 0.9;
-speech.pitch = 1.3; // Nada tinggi untuk memastikan karakter suara wanita
+speech.pitch = 1.2;
 
 const voices = window.speechSynthesis.getVoices();
 const femaleVoice = voices.find(voice =>
@@ -289,7 +310,6 @@ const femaleVoice = voices.find(voice =>
 (voice.name.toLowerCase().includes('female') || 
  voice.name.toLowerCase().includes('wanita') || 
  voice.name.toLowerCase().includes('zira') || 
- voice.name.toLowerCase().includes('gadis') ||
  voice.name.toLowerCase().includes('google'))
 );
 
@@ -298,11 +318,9 @@ speech.voice = femaleVoice;
 }
 
 window.speechSynthesis.speak(speech);
-} else {
-console.error("Browser TV tidak mendukung Web Speech API.");
 }
 } catch (e) {
-console.error("Jalur cadangan pun gagal:", e);
+console.error("Jalur cadangan gagal:", e);
 }
 }
 
