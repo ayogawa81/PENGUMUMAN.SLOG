@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Display Jadwal Kegiatan Online Synchronized</title>
+<title>Display Pengumuman Slog</title>
+<script src="https://code.responsivevoice.org/voice.js"></script>
 <style>
 * {
 margin: 0; padding: 0; box-sizing: border-box;
@@ -50,7 +51,6 @@ tr:nth-child(odd) { background-color: #162238; }
 .status-badge { display: inline-block; padding: 6px 16px; border-radius: 30px; font-size: 1rem; font-weight: bold; text-transform: uppercase; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 .status-ongoing { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
 .status-waiting { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
-.status-done { background-color: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
 
 /* MODAL PANEL */
 .modal-overlay {
@@ -86,9 +86,9 @@ color: white; text-align: center; padding: 20px;
 <body>
 
 <div id="tizenAudioUnlocker">
-<h1 style="font-size: 2.5rem; margin-bottom: 15px; color: #3b82f6; font-weight: 800;">SISTEM MONITORING JADWAL</h1>
-<p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Harap klik tombol di bawah ini menggunakan remote atau mouse agar TV Tizen mengizinkan suara aktif.</p>
-<button id="btnUnlockTizen" onclick="bukaKunciAudioTizen()" style="padding: 18px 45px; font-size: 1.5rem; font-weight: bold; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(16,185,129,0.4);">
+<h1 style="font-size: 2.5rem; margin-bottom: 15px; color: #3b82f6; font-weight: 800;">SISTEM MONITORING PENGUMUMAN SLOG</h1>
+<p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Harap klik tombol di bawah ini menggunakan remote atau mouse agar TV Tizen mengizinkan suara pengumuman wanita aktif.</p>
+<button onclick="bukaKunciAudioTizen()" style="padding: 18px 45px; font-size: 1.5rem; font-weight: bold; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(16,185,129,0.4);">
 🔊 AKTIFKAN SUARA DISPLAY
 </button>
 </div>
@@ -97,7 +97,7 @@ color: white; text-align: center; padding: 20px;
 
 <header>
 <div class="logo-title">
-<h1>JADWAL KEGIATAN & AGENDA UTAMA</h1>
+<h1>PENGUMUMAN & AGENDA UTAMA SLOG</h1>
 <p>Silakan periksa waktu dan lokasi ruangan Anda</p>
 </div>
 <div class="datetime-container">
@@ -115,7 +115,7 @@ color: white; text-align: center; padding: 20px;
 <thead>
 <tr>
 <th style="width: 22%;">Tanggal & Waktu</th>
-<th style="width: 30%;">Nama Kegiatan / Agenda</th>
+<th style="width: 30%;">Nama Kegiatan / Pengumuman</th>
 <th style="width: 20%;">Personel / Peserta</th>
 <th style="width: 15%;">Lokasi / Ruang</th>
 <th style="width: 13%; text-align: center;">Status</th>
@@ -131,7 +131,7 @@ color: white; text-align: center; padding: 20px;
 <div class="modal-overlay" id="settingModal">
 <div class="modal-content">
 <div class="modal-header">
-<h2>⚙️ Pengaturan Jadwal Global (Online Database)</h2>
+<h2>⚙️ Pengaturan Pengumuman (Online Database)</h2>
 <button class="btn-close" onclick="toggleModal(false)">✕</button>
 </div>
 
@@ -152,8 +152,8 @@ color: white; text-align: center; padding: 20px;
 </div>
 </div>
 <div class="form-group" style="margin-top: 10px;">
-<label for="inputKegiatan">Nama Kegiatan:</label>
-<input type="text" id="inputKegiatan" placeholder="Nama Agenda / Kegiatan Utama">
+<label for="inputKegiatan">Nama Pengumuman / Kegiatan:</label>
+<input type="text" id="inputKegiatan" placeholder="Nama Agenda / Pengumuman Utama">
 </div>
 <div class="form-group">
 <label for="inputPersonel">Personel / Peserta:</label>
@@ -178,36 +178,30 @@ let currentMinutes = "00";
 let editIndex = -1;
 let spokenSchedules = new Set();
 let tizenAudioValid = false;
-let audioCtx = null;
 
 function bukaKunciAudioTizen() {
 try {
-// Inisialisasi AudioContext dengan interaksi pengguna
-const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-if (AudioContextClass) {
-audioCtx = new AudioContextClass();
-if (audioCtx.state === 'suspended') {
-audioCtx.resume();
-}
-}
-
 const player = document.getElementById('globalAudioPlayer');
 player.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
 
 player.play().then(() => {
 tizenAudioValid = true;
 document.getElementById('tizenAudioUnlocker').style.display = 'none';
-console.log("Audio Engine Tizen Berhasil Di-unlock!");
+console.log("Audio Engine Berhasil Di-unlock!");
 
 setTimeout(() => {
-panggilSuaraAI("Sistem suara display berhasil diaktifkan.");
-}, 200);
+if (typeof responsiveVoice !== 'undefined') {
+responsiveVoice.speak("Sistem pengumuman suara wanita telah diaktifkan secara sukses.", "Indonesian Female", { volume: 1, rate: 0.95 });
+} else {
+panggilSuaraAI("Sistem pengumuman suara wanita telah diaktifkan secara sukses.");
+}
+}, 300);
 }).catch(err => {
-console.error("Gagal unlock audio:", err);
-alert("Tekan tombol sekali lagi menggunakan remote TV!");
+alert("Gagal mengaktifkan Audio. Harap klik ulang tombol!");
+console.error(err);
 });
 } catch (e) {
-console.error("Error pada unlock audio:", e);
+console.error(e);
 }
 }
 
@@ -228,16 +222,8 @@ updateStatusBadges();
 
 function playBeepSound(callback) {
 try {
-if (!audioCtx) {
-const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-if (AudioContextClass) audioCtx = new AudioContextClass();
-}
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-if (audioCtx && audioCtx.state === 'suspended') {
-audioCtx.resume();
-}
-
-if (audioCtx) {
 function pembuatBeep(waktuMulai, frekuensi, durasi) {
 const oscillator = audioCtx.createOscillator();
 const gainNode = audioCtx.createGain();
@@ -261,9 +247,6 @@ pembuatBeep(audioCtx.currentTime + 0.2, 1046.5, 0.2);
 setTimeout(() => {
 if (callback) callback();
 }, 550);
-} else {
-if (callback) callback();
-}
 } catch (e) {
 console.error("Gagal membunyikan beep: ", e);
 if (callback) callback();
@@ -274,22 +257,24 @@ function panggilSuaraAI(teks) {
 if (!tizenAudioValid) return;
 
 try {
+console.log("Mencoba Voice RSS (Suara Wanita Intan): " + teks);
 const player = document.getElementById('globalAudioPlayer');
-// Menggunakan Google TTS Engine Stream Khusus Bahasa Indonesia (Suara Wanita)
-const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(teks)}&tl=id&client=tw-ob`;
+const apiKey = "1dcaf4a9430148c3acf148035b135cbf";
+// Tetap Menggunakan Suara Perempuan Indonesia "Intan"
+const url = `https://api.voicerss.org/?key=${apiKey}&hl=id-id&v=Intan&c=mp3&f=16khz_16bit_stereo&src=${encodeURIComponent(teks)}`;
 
 player.src = url;
 player.load();
 
-const playPromise = player.play();
-if (playPromise !== undefined) {
-playPromise.catch(error => {
-console.warn("Google TTS terhalang, beralih ke metode lokal...", error);
+setTimeout(() => {
+player.play().catch(err => {
+console.warn("Voice RSS diblokir Tizen, beralih ke jalur cadangan wanita lokal...", err);
 jalurCadanganTizenLokal(teks);
 });
-}
+}, 300);
+
 } catch (error) {
-console.error("Gagal memuat suara utama, memakai jalur cadangan...", error);
+console.error("Gagal memuat Voice RSS, mencoba jalur cadangan...", error);
 jalurCadanganTizenLokal(teks);
 }
 }
@@ -297,20 +282,19 @@ jalurCadanganTizenLokal(teks);
 function jalurCadanganTizenLokal(teks) {
 try {
 if ('speechSynthesis' in window) {
+console.log("Menjalankan TTS Cadangan Internal TV (Suara Wanita)...");
 window.speechSynthesis.cancel();
 
 const speech = new SpeechSynthesisUtterance(teks);
 speech.lang = 'id-ID';
 speech.rate = 0.9;
-speech.pitch = 1.2;
+speech.pitch = 1.1;
 
 const voices = window.speechSynthesis.getVoices();
+// Mengutamakan profil suara Wanita
 const femaleVoice = voices.find(voice =>
 (voice.lang.includes('id') || voice.lang.includes('ID')) &&
-(voice.name.toLowerCase().includes('female') || 
- voice.name.toLowerCase().includes('wanita') || 
- voice.name.toLowerCase().includes('zira') || 
- voice.name.toLowerCase().includes('google'))
+(voice.name.toLowerCase().includes('female') || voice.name.toLowerCase().includes('wanita') || voice.name.toLowerCase().includes('zira') || voice.name.toLowerCase().includes('google'))
 );
 
 if (femaleVoice) {
@@ -320,7 +304,7 @@ speech.voice = femaleVoice;
 window.speechSynthesis.speak(speech);
 }
 } catch (e) {
-console.error("Jalur cadangan gagal:", e);
+console.error("Jalur cadangan pun gagal:", e);
 }
 }
 
@@ -368,11 +352,12 @@ mainTbody.innerHTML = '';
 if(managerList) managerList.innerHTML = '';
 
 if (systemSchedules.length === 0) {
-mainTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Tidak ada agenda kegiatan saat ini. Klik Setting untuk menambah.</td></tr>`;
+mainTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Tidak ada pengumuman saat ini. Klik Setting untuk menambah.</td></tr>`;
 if (shouldSave) saveDataToCloud();
 return;
 }
 
+// URUTKAN: Tanggal & Waktu paling tua / awal berada di posisi paling atas
 systemSchedules.sort((a, b) => {
 const dateA = new Date(`${a.tglMulai}T${(a.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
 const dateB = new Date(`${b.tglMulai}T${(b.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
@@ -490,7 +475,7 @@ btnAdd.disabled = false;
 }
 
 function deleteSchedule(index) {
-if (confirm("Hapus jadwal ini?")) {
+if (confirm("Hapus pengumuman ini?")) {
 if (editIndex === index) {
 editIndex = -1;
 const btnAdd = document.getElementById('btnAdd');
@@ -545,12 +530,13 @@ const baseKey = `${startDateStr}-${endDateStr}-${timeRange}-${eventName}`;
 
 let appendPesertaText = (personnelName && personnelName !== '-') ? ` bersama ${personnelName}` : '';
 
+// JIKA WAKTU SUDAH SELESAI: Panggil pengumuman lalu HAPUS otomatis dari display
 if (waktuSekarangLengkap > waktuSelesaiLengkap) {
 const keySelesai = `${baseKey}-selesai`;
 if (!spokenSchedules.has(keySelesai)) {
 spokenSchedules.add(keySelesai);
 playBeepSound(() => {
-panggilSuaraAI(`Informasi, kegiatan ${eventName}${appendPesertaText} di lokasi ${roomName} telah selesai.`);
+panggilSuaraAI(`Informasi, pengumuman ${eventName}${appendPesertaText} di lokasi ${roomName} telah selesai.`);
 });
 }
 
@@ -574,7 +560,7 @@ const keyBerlangsung = `${baseKey}-berlangsung`;
 if (!spokenSchedules.has(keyBerlangsung)) {
 spokenSchedules.add(keyBerlangsung);
 playBeepSound(() => {
-panggilSuaraAI(`Perhatian, kegiatan ${eventName}${appendPesertaText} di lokasi ${roomName} sedang berlangsung.`);
+panggilSuaraAI(`Perhatian, pengumuman ${eventName}${appendPesertaText} di lokasi ${roomName} sedang berlangsung.`);
 });
 }
 
@@ -586,7 +572,7 @@ const keyMenunggu = `${baseKey}-menunggu`;
 if (!spokenSchedules.has(keyMenunggu)) {
 spokenSchedules.add(keyMenunggu);
 playBeepSound(() => {
-panggilSuaraAI(`Pemberitahuan, kegiatan ${eventName}${appendPesertaText} di lokasi ${roomName} dalam status menunggu.`);
+panggilSuaraAI(`Pemberitahuan, pengumuman ${eventName}${appendPesertaText} di lokasi ${roomName} dalam status menunggu.`);
 });
 }
 }
@@ -596,6 +582,7 @@ console.error(error);
 }
 });
 
+// Render ulang jika ada item yang habis waktunya untuk menghapusnya dari layar
 if (hasExpiredItems) {
 renderSchedules(true);
 }
