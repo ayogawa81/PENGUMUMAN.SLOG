@@ -231,28 +231,35 @@ playTone(f, 'sine', 0.8, i * 250);
 });
 }
 
-// Fungsi Pemanggilan Pengumuman
+// Fungsi Pemanggilan Pengumuman (Google TTS Online API - 100% Suara Perempuan Indonesia)
 function panggilSuaraAI(teks) {
-// 1. Jalankan Sirine/Chime Notifikasi TV
 playChimeNotification([523.25, 659.25, 783.99, 1046.50]);
 
-// 2. Coba eksekusi Speech Synthesis jika chip TV mendukung
-if ('speechSynthesis' in window) {
+setTimeout(() => {
 try {
+const existingAudio = document.getElementById('audioTTS');
+if (existingAudio) existingAudio.remove();
+
+const encodedText = encodeURIComponent(teks);
+const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=id&client=tw-ob`;
+
+const audio = new Audio(ttsUrl);
+audio.id = 'audioTTS';
+audio.playbackRate = 0.95;
+audio.play().catch(() => {
+// Fallback jika koneksi internet lokal bermasalah
+if ('speechSynthesis' in window) {
 window.speechSynthesis.cancel();
 const speech = new SpeechSynthesisUtterance(teks);
 speech.lang = 'id-ID';
-speech.rate = 0.85;
-
-const voices = window.speechSynthesis.getVoices();
-const idVoice = voices.find(v => v.lang.includes('id') || v.lang.includes('ID'));
-if (idVoice) speech.voice = idVoice;
-
-setTimeout(() => {
+speech.pitch = 1.3;
 window.speechSynthesis.speak(speech);
-}, 1200);
-} catch (e) {}
 }
+});
+} catch (e) {
+console.error("Gagal memutar audio TTS:", e);
+}
+}, 1200);
 }
 
 function updateDateTime() {
