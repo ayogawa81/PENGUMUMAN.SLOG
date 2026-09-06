@@ -167,7 +167,7 @@ color: white; text-align: center; padding: 20px;
 </div>
 
 <script>
-const dbURL = " https://api.npoint.io/c49be5b5e56876c0a5c8";
+const dbURL = "https://api.npoint.io/79fb87bf4e7964927964";
 
 let systemSchedules = [];
 let currentHours = "00";
@@ -280,26 +280,26 @@ updateStatusBadges();
 async function loadDataFromCloud() {
 try {
 const response = await fetch(`${dbURL}?_=${new Date().getTime()}`);
-if (!response.ok) throw new Error();
+if (!response.ok) throw new Error("Gagal mengambil data dari server online");
 
 systemSchedules = await response.json();
 if (!Array.isArray(systemSchedules)) systemSchedules = [];
 renderSchedules(false);
 } catch (e) {
-systemSchedules = JSON.parse(localStorage.getItem("LOCAL_JWS_DATA")) || [];
-renderSchedules(false);
+console.error("Error mengambil data dari cloud:", e);
 }
 }
 
 async function saveDataToCloud() {
-localStorage.setItem("LOCAL_JWS_DATA", JSON.stringify(systemSchedules));
 try {
 await fetch(dbURL, {
 method: 'POST',
 headers: { "Content-Type": "application/json" },
 body: JSON.stringify(systemSchedules)
 });
-} catch (e) {}
+} catch (e) {
+console.error("Gagal menyimpan data ke cloud:", e);
+}
 }
 
 function formatTanggalIndo(dateStr) {
