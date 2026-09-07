@@ -343,12 +343,22 @@ function initAudioEngine() {
     if (AudioContextClass) audioCtx = new AudioContextClass();
   }
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
+  // Inisialisasi engine pembaca suara Web Speech API bawaan Smart TV
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.getVoices();
+  }
 }
 
 function bukaKunciAudioTizen() {
   initAudioEngine();
   document.getElementById('tizenAudioUnlocker').style.display = 'none';
+  
+  // Tes nada awal dan tes suara pembicara
   playChimeNotification([523.25, 659.25, 783.99]);
+  setTimeout(() => {
+    panggilSuaraAI("Sistem audio monitoring jadwal berhasil diaktifkan.");
+  }, 1000);
 }
 
 function playTone(freq, type, duration, delay = 0) {
@@ -383,6 +393,22 @@ function playChimeNotification(freqs = [440, 554.37, 659.25]) {
   });
 }
 
+function speakWebSpeechAPI(teks) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const speech = new SpeechSynthesisUtterance(teks);
+    speech.lang = 'id-ID';
+    speech.rate = 0.9;
+    speech.pitch = 1.0;
+    
+    const voices = window.speechSynthesis.getVoices();
+    const idVoice = voices.find(v => v.lang.includes('id') || v.lang.includes('ID'));
+    if (idVoice) speech.voice = idVoice;
+
+    window.speechSynthesis.speak(speech);
+  }
+}
+
 function panggilSuaraAI(teks) {
   playChimeNotification([523.25, 659.25, 783.99, 1046.50]);
 
@@ -394,20 +420,35 @@ function panggilSuaraAI(teks) {
       const encodedText = encodeURIComponent(teks);
       const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' + encodedText + '&tl=id&client=tw-ob';
 
-      const audio = new Audio(ttsUrl);
+      const audio = new Audio();
       audio.id = 'audioTTS';
+      audio.crossOrigin = "anonymous";
       audio.playbackRate = 0.95;
-      audio.play().catch(() => {
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const speech = new SpeechSynthesisUtterance(teks);
-          speech.lang = 'id-ID';
-          speech.pitch = 1.2;
-          window.speechSynthesis.speak(speech);
+
+      let played = false;
+
+      audio.oncanplaythrough = () => {
+        if (!played) {
+          played = true;
+          audio.play().catch(() => speakWebSpeechAPI(teks));
         }
-      });
+      };
+
+      audio.onerror = () => {
+        speakWebSpeechAPI(teks);
+      };
+
+      audio.src = ttsUrl;
+      
+      // Fallback jika Google TTS memakan waktu lebih dari 2.5 detik pada TV
+      setTimeout(() => {
+        if (!played && audio.paused) {
+          speakWebSpeechAPI(teks);
+        }
+      }, 2500);
+
     } catch (e) {
-      console.error("Gagal memutar audio TTS:", e);
+      speakWebSpeechAPI(teks);
     }
   }, 1200);
 }
