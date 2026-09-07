@@ -213,7 +213,7 @@ tr:hover td { background: rgba(51, 65, 85, 0.3); }
   </div>
   <div class="datetime-container">
     <div>
-      <div id="clock">00:00:00</div>
+      <div id="clock">00:00</div>
       <div id="date">Memuat Tanggal...</div>
     </div>
     <button class="btn-setting" onclick="toggleModal(true)">➕ Tambah Agenda</button>
@@ -261,19 +261,17 @@ tr:hover td { background: rgba(51, 65, 85, 0.3); }
 
     <div class="form-row">
       <div class="form-group">
-        <label>Jam Mulai (HH:MM:SS):</label>
+        <label>Jam Mulai (HH:MM):</label>
         <div class="time-picker-group">
           <select id="startHour" class="time-picker-select"></select><span>:</span>
-          <select id="startMinute" class="time-picker-select"></select><span>:</span>
-          <select id="startSecond" class="time-picker-select"></select>
+          <select id="startMinute" class="time-picker-select"></select>
         </div>
       </div>
       <div class="form-group">
-        <label>Jam Selesai (HH:MM:SS):</label>
+        <label>Jam Selesai (HH:MM):</label>
         <div class="time-picker-group">
           <select id="endHour" class="time-picker-select"></select><span>:</span>
-          <select id="endMinute" class="time-picker-select"></select><span>:</span>
-          <select id="endSecond" class="time-picker-select"></select>
+          <select id="endMinute" class="time-picker-select"></select>
         </div>
       </div>
     </div>
@@ -335,10 +333,8 @@ function initTimePickers() {
 
   populateOptions('startHour', 24);
   populateOptions('startMinute', 60);
-  populateOptions('startSecond', 60);
   populateOptions('endHour', 24);
   populateOptions('endMinute', 60);
-  populateOptions('endSecond', 60);
 }
 
 function initAudioEngine() {
@@ -422,7 +418,7 @@ function updateDateTime() {
     currentHours = String(now.getHours()).padStart(2, '0');
     currentMinutes = String(now.getMinutes()).padStart(2, '0');
 
-    document.getElementById('clock').textContent = currentHours + ':' + currentMinutes + ':' + String(now.getSeconds()).padStart(2, '0');
+    document.getElementById('clock').textContent = currentHours + ':' + currentMinutes;
 
     const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
     document.getElementById('date').textContent = now.toLocaleDateString('id-ID', options);
@@ -477,8 +473,8 @@ function renderSchedules(shouldSave = true) {
   }
 
   systemSchedules.sort((a, b) => {
-    const dateA = new Date((a.tglMulai || '') + 'T' + (a.waktu.split('-')[0] || '00:00:00').trim().replace(/\./g, ':'));
-    const dateB = new Date((b.tglMulai || '') + 'T' + (b.waktu.split('-')[0] || '00:00:00').trim().replace(/\./g, ':'));
+    const dateA = new Date((a.tglMulai || '') + 'T' + (a.waktu.split('-')[0] || '00:00').trim().replace(/\./g, ':'));
+    const dateB = new Date((b.tglMulai || '') + 'T' + (b.waktu.split('-')[0] || '00:00').trim().replace(/\./g, ':'));
     return dateA - dateB;
   });
 
@@ -487,9 +483,9 @@ function renderSchedules(shouldSave = true) {
     tr.setAttribute('id', 'row-' + index);
     
     if (editingRowIndex === index) {
-      const parts = (item.waktu || '08:00:00 - 10:00:00').split('-');
+      const parts = (item.waktu || '08:00 - 10:00').split('-');
       const sParts = parts[0].trim().split(':');
-      const eParts = (parts[1] || '10:00:00').trim().split(':');
+      const eParts = (parts[1] || '10:00').trim().split(':');
 
       tr.innerHTML = 
         '<td class="col-time">' +
@@ -499,13 +495,11 @@ function renderSchedules(shouldSave = true) {
             '<div class="edit-time-container">' +
               '<div class="edit-time-group">' +
                 '<select id="edit-sH" class="edit-select">' + generateOptionsHTML(24, sParts[0]) + '</select>:' +
-                '<select id="edit-sM" class="edit-select">' + generateOptionsHTML(60, sParts[1]) + '</select>:' +
-                '<select id="edit-sS" class="edit-select">' + generateOptionsHTML(60, sParts[2]) + '</select>' +
+                '<select id="edit-sM" class="edit-select">' + generateOptionsHTML(60, sParts[1]) + '</select>' +
               '</div>' +
               '<div class="edit-time-group">' +
                 '<select id="edit-eH" class="edit-select">' + generateOptionsHTML(24, eParts[0]) + '</select>:' +
-                '<select id="edit-eM" class="edit-select">' + generateOptionsHTML(60, eParts[1]) + '</select>:' +
-                '<select id="edit-eS" class="edit-select">' + generateOptionsHTML(60, eParts[2]) + '</select>' +
+                '<select id="edit-eM" class="edit-select">' + generateOptionsHTML(60, eParts[1]) + '</select>' +
               '</div>' +
             '</div>' +
           '</div>' +
@@ -569,11 +563,9 @@ function saveInlineEdit(index) {
   
   const sH = document.getElementById('edit-sH').value;
   const sM = document.getElementById('edit-sM').value;
-  const sS = document.getElementById('edit-sS').value;
 
   const eH = document.getElementById('edit-eH').value;
   const eM = document.getElementById('edit-eM').value;
-  const eS = document.getElementById('edit-eS').value;
 
   const kegiatan = document.getElementById('edit-kegiatan').value.trim();
   const pimpinan = document.getElementById('edit-pimpinan').value.trim();
@@ -592,7 +584,7 @@ function saveInlineEdit(index) {
 
   systemSchedules[index] = {
     tglMulai, tglSelesai,
-    waktu: sH + ':' + sM + ':' + sS + ' - ' + eH + ':' + eM + ':' + eS,
+    waktu: sH + ':' + sM + ' - ' + eH + ':' + eM,
     kegiatan, pimpinan, personel, lokasi
   };
 
@@ -613,13 +605,11 @@ async function addNewSchedule() {
   
   const sH = document.getElementById('startHour').value;
   const sM = document.getElementById('startMinute').value;
-  const sS = document.getElementById('startSecond').value;
 
   const eH = document.getElementById('endHour').value;
   const eM = document.getElementById('endMinute').value;
-  const eS = document.getElementById('endSecond').value;
 
-  const waktu = sH + ':' + sM + ':' + sS + ' - ' + eH + ':' + eM + ':' + eS;
+  const waktu = sH + ':' + sM + ' - ' + eH + ':' + eM;
   const kegiatan = document.getElementById('inputKegiatan').value.trim();
   const pimpinan = document.getElementById('inputPimpinan').value.trim();
   const personel = document.getElementById('inputPersonel').value.trim();
@@ -665,11 +655,11 @@ function updateStatusBadges() {
       const startParts = startTime.split(':').map(Number);
       const endParts = endTime.split(':').map(Number);
 
-      const jamMulai = startParts[0], menitMulai = startParts[1] || 0, detikMulai = startParts[2] || 0;
-      const jamSelesai = endParts[0], menitSelesai = endParts[1] || 0, detikSelesai = endParts[2] || 0;
+      const jamMulai = startParts[0], menitMulai = startParts[1] || 0;
+      const jamSelesai = endParts[0], menitSelesai = endParts[1] || 0;
 
-      const waktuMulaiLengkap = new Date(startDateStr).setHours(jamMulai, menitMulai, detikMulai, 0);
-      const waktuSelesaiLengkap = new Date(endDateStr).setHours(jamSelesai, menitSelesai, detikSelesai, 0);
+      const waktuMulaiLengkap = new Date(startDateStr).setHours(jamMulai, menitMulai, 0, 0);
+      const waktuSelesaiLengkap = new Date(endDateStr).setHours(jamSelesai, menitSelesai, 59, 999);
 
       badge.className = 'status-badge';
       const baseKey = startDateStr + '-' + endDateStr + '-' + timeRange + '-' + eventName;
