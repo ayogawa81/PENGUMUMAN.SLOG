@@ -3,171 +3,384 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Display Jadwal Kegiatan Online Synchronized</title>
+<title>Display Jadwal Kegiatan Online Synchronized - Cyber Modern</title>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
 * {
-margin: 0; padding: 0; box-sizing: border-box;
-font-family: 'DengXian', 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0; padding: 0; box-sizing: border-box;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
+
 body {
-background-color: #0f172a; color: #f8fafc; height: 100vh;
-display: flex; flex-direction: column; overflow: hidden; position: relative;
+  background: radial-gradient(circle at 10% 20%, #0f172a 0%, #020617 90%);
+  color: #f8fafc;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
 }
+
+/* Background Glowing Accents */
+body::before {
+  content: '';
+  position: absolute;
+  top: -10%; left: -10%;
+  width: 40%; height: 40%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0,0,0,0) 70%);
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: absolute;
+  bottom: -10%; right: -10%;
+  width: 40%; height: 40%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(0,0,0,0) 70%);
+  pointer-events: none;
+}
+
 header {
-background: linear-gradient(90deg, #1e3a8a, #0f172a);
-padding: 20px 40px; display: flex; justify-content: space-between;
-align-items: center; border-bottom: 4px solid #3b82f6;
-box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 18px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  z-index: 10;
 }
-.logo-title h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; color: #ffffff; text-transform: uppercase; }
-.logo-title p { color: #94a3b8; font-size: 1.1rem; margin-top: 5px; }
+
+.logo-title h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  background: linear-gradient(135deg, #60a5fa 0%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+}
+
+.logo-title p {
+  color: #94a3b8;
+  font-size: 1rem;
+  margin-top: 4px;
+  font-weight: 400;
+}
+
 .datetime-container {
-text-align: right; background: rgba(30, 41, 59, 0.7);
-padding: 10px 20px; border-radius: 12px; border: 1px solid #334155;
-display: flex; align-items: center; gap: 20px;
+  text-align: right;
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(10px);
+  padding: 10px 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
-#clock { font-size: 2.5rem; font-weight: bold; color: #3b82f6; font-variant-numeric: tabular-nums; line-height: 1; }
-#date { font-size: 1.1rem; color: #cbd5e1; margin-top: 5px; font-weight: 500; }
+
+#clock {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2.3rem;
+  font-weight: 700;
+  color: #38bdf8;
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+  line-height: 1;
+}
+
+#date {
+  font-size: 0.95rem;
+  color: #cbd5e1;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
 .btn-setting {
-background-color: #334155; color: #f8fafc; border: 1px solid #475569;
-padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 10px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
-.btn-setting:hover { background-color: #3b82f6; border-color: #3b82f6; }
-main { flex: 1; padding: 40px; display: flex; flex-direction: column; }
+
+.btn-setting:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #60a5fa;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+
+main {
+  flex: 1;
+  padding: 30px 40px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+}
+
 .table-container {
-width: 100%; background-color: #1e293b; border-radius: 16px;
-overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); border: 1px solid #334155;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
-table { width: 100%; border-collapse: collapse; text-align: left; }
-th { background-color: #0f172a; color: #3b82f6; font-size: 1.4rem; font-weight: 700; padding: 20px 25px; text-transform: uppercase; border-bottom: 3px solid #334155; }
-td { padding: 22px 25px; font-size: 1.3rem; color: #e2e8f0; border-bottom: 1px solid #334155; vertical-align: middle; }
-tr:nth-child(even) { background-color: #1e293b; }
-tr:nth-child(odd) { background-color: #162238; }
-.col-time { font-weight: bold; color: #f59e0b; width: 22%; }
-.col-event { width: 30%; font-weight: 500; }
-.col-personnel { width: 20%; color: #38bdf8; font-weight: 500; }
-.col-room { width: 15%; color: #cbd5e1; }
-.status-badge { display: inline-block; padding: 6px 16px; border-radius: 30px; font-size: 1rem; font-weight: bold; text-transform: uppercase; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-.status-ongoing { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
-.status-waiting { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
-.status-done { background-color: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+th {
+  background: rgba(30, 41, 59, 0.8);
+  color: #38bdf8;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 18px 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+td {
+  padding: 18px 20px;
+  font-size: 1.15rem;
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+  transition: background 0.2s;
+}
+
+tr:hover td {
+  background: rgba(51, 65, 85, 0.3);
+}
+
+.col-time {
+  font-weight: 700;
+  color: #fbbf24;
+  width: 20%;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.col-event {
+  width: 24%;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.col-leader {
+  width: 18%;
+  color: #c084fc;
+  font-weight: 600;
+}
+
+.col-personnel {
+  width: 16%;
+  color: #38bdf8;
+  font-weight: 500;
+}
+
+.col-room {
+  width: 12%;
+  color: #cbd5e1;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.status-ongoing {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+.status-waiting {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+
+.status-done {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+}
 
 .modal-overlay {
-position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.75);
-display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: all 0.3s ease;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 1000; opacity: 0; pointer-events: none; transition: all 0.3s ease;
 }
 .modal-overlay.active { opacity: 1; pointer-events: auto; }
-.modal-content { background-color: #1e293b; width: 90%; max-width: 650px; max-height: 90vh; border-radius: 16px; border: 1px solid #475569; padding: 25px; display: flex; flex-direction: column; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
-.modal-header h2 { font-size: 1.5rem; color: #3b82f6; }
+
+.modal-content {
+  background: #0f172a;
+  width: 90%; max-width: 700px; max-height: 90vh;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 30px;
+  display: flex; flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 12px; }
+.modal-header h2 { font-size: 1.4rem; color: #60a5fa; }
 .btn-close { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; }
 
-.form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; }
-.form-group label { font-size: 0.9rem; color: #94a3b8; font-weight: 500; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.form-group input { background-color: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 12px; border-radius: 6px; font-size: 1rem; width: 100%; color-scheme: dark; }
-.btn-add { background-color: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 20px; font-size: 1rem; margin-top: 10px; }
-.btn-add:disabled { background-color: #475569; cursor: not-allowed; }
+.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.form-group label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-group input {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  width: 100%;
+  color-scheme: dark;
+}
+.form-group input:focus { border-color: #3b82f6; outline: none; }
+
+.btn-add {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white; border: none; padding: 12px; border-radius: 10px;
+  font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 15px; font-size: 1rem; margin-top: 10px;
+  transition: all 0.2s;
+}
+.btn-add:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+.btn-add:disabled { background: #475569; cursor: not-allowed; }
+
 .schedule-manager-list { flex: 1; overflow-y: auto; border-top: 1px solid #334155; padding-top: 15px; }
-.manager-item { display: flex; justify-content: space-between; align-items: center; background-color: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #2d3748; gap: 10px; }
-.manager-item-text { font-size: 0.95rem; color: #cbd5e1; flex: 1; }
-.btn-delete { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+.manager-item { display: flex; justify-content: space-between; align-items: center; background-color: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #334155; gap: 10px; }
+.manager-item-text { font-size: 0.9rem; color: #cbd5e1; flex: 1; }
+.btn-delete { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
 
 #tizenAudioUnlocker {
-position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-background: rgba(15, 23, 42, 0.98); z-index: 99999;
-display: flex; flex-direction: column; justify-content: center; align-items: center;
-color: white; text-align: center; padding: 20px;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(2, 6, 23, 0.96); z-index: 99999;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  color: white; text-align: center; padding: 20px;
 }
 </style>
 </head>
 <body>
 
 <div id="tizenAudioUnlocker">
-<h1 style="font-size: 2.5rem; margin-bottom: 15px; color: #3b82f6; font-weight: 800;">SISTEM MONITORING JADWAL</h1>
-<p style="font-size: 1.3rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Tekan tombol OK / Enter pada remote TV untuk mengaktifkan izin suara.</p>
-<button id="btnUnlockTizen" onclick="bukaKunciAudioTizen()" style="padding: 22px 50px; font-size: 1.6rem; font-weight: bold; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(16,185,129,0.4);" autofocus>
-🔊 KLIK / TEKAN OK UNTUK AKTIFKAN SUARA TV
-</button>
+  <h1 style="font-size: 2.2rem; margin-bottom: 15px; color: #38bdf8; font-weight: 800; letter-spacing: 1px;">SISTEM MONITORING JADWAL</h1>
+  <p style="font-size: 1.1rem; margin-bottom: 30px; color: #94a3b8; max-width: 500px;">Tekan tombol OK / Enter pada remote TV untuk mengaktifkan audio otomatis.</p>
+  <button id="btnUnlockTizen" onclick="bukaKunciAudioTizen()" style="padding: 18px 40px; font-size: 1.3rem; font-weight: 700; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 14px; cursor: pointer; box-shadow: 0 10px 30px rgba(16,185,129,0.4);" autofocus>
+    🔊 TEKAN UNTUK AKTIFKAN SUARA
+  </button>
 </div>
 
 <header>
-<div class="logo-title">
-<h1>JADWAL KEGIATAN & AGENDA UTAMA</h1>
-<p>Silakan periksa waktu dan lokasi ruangan Anda</p>
-</div>
-<div class="datetime-container">
-<div>
-<div id="clock">00:00:00</div>
-<div id="date">Memuat Tanggal...</div>
-</div>
-<button class="btn-setting" onclick="toggleModal(true)">⚙️ Setting</button>
-</div>
+  <div class="logo-title">
+    <h1>JADWAL KEGIATAN & AGENDA UTAMA</h1>
+    <p>Monitoring Waktu, Pimpinan Rapat, dan Lokasi Ruangan</p>
+  </div>
+  <div class="datetime-container">
+    <div>
+      <div id="clock">00:00:00</div>
+      <div id="date">Memuat Tanggal...</div>
+    </div>
+    <button class="btn-setting" onclick="toggleModal(true)">⚙️ Pengaturan</button>
+  </div>
 </header>
 
 <main>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="width: 22%;">Tanggal & Waktu</th>
-<th style="width: 30%;">Nama Kegiatan / Agenda</th>
-<th style="width: 20%;">Personel / Peserta</th>
-<th style="width: 15%;">Lokasi / Ruang</th>
-<th style="width: 13%; text-align: center;">Status</th>
-</tr>
-</thead>
-<tbody id="main-table-body">
-<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Menghubungkan ke Database Online Global...</td></tr>
-</tbody>
-</table>
-</div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 20%;">Tanggal & Waktu</th>
+          <th style="width: 24%;">Nama Kegiatan / Agenda</th>
+          <th style="width: 18%;">Pimpinan Rapat</th>
+          <th style="width: 16%;">Personel / Peserta</th>
+          <th style="width: 12%;">Lokasi</th>
+          <th style="width: 10%; text-align: center;">Status</th>
+        </tr>
+      </thead>
+      <tbody id="main-table-body">
+        <tr><td colspan="6" style="text-align: center; color: #94a3b8;">Menghubungkan ke Database Online Global...</td></tr>
+      </tbody>
+    </table>
+  </div>
 </main>
 
 <div class="modal-overlay" id="settingModal">
-<div class="modal-content">
-<div class="modal-header">
-<h2>⚙️ Pengaturan Jadwal Global (Online Database)</h2>
-<button class="btn-close" onclick="toggleModal(false)">✕</button>
-</div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>⚙️ Pengaturan Agenda (Online Database)</h2>
+      <button class="btn-close" onclick="toggleModal(false)">✕</button>
+    </div>
 
-<div class="form-row">
-<div class="form-group">
-<label for="inputTglMulai">Tanggal Mulai:</label>
-<input type="date" id="inputTglMulai">
-</div>
-<div class="form-group">
-<label for="inputTglSelesai">Tanggal Selesai:</label>
-<input type="date" id="inputTglSelesai">
-</div>
-</div>
-<div class="form-row" style="margin-top: 10px;">
-<div class="form-group" style="grid-column: span 2;">
-<label for="inputWaktu">Waktu/Jam (Format HH:MM - HH:MM):</label>
-<input type="text" id="inputWaktu" placeholder="Contoh: 08:30 - 12:00">
-</div>
-</div>
-<div class="form-group" style="margin-top: 10px;">
-<label for="inputKegiatan">Nama Kegiatan:</label>
-<input type="text" id="inputKegiatan" placeholder="Nama Agenda / Kegiatan Utama">
-</div>
-<div class="form-group">
-<label for="inputPersonel">Personel / Peserta:</label>
-<input type="text" id="inputPersonel" placeholder="Contoh: Direksi, Tim IT, All Staff, dll.">
-</div>
-<div class="form-group">
-<label for="inputLokasi">Lokasi Ruangan:</label>
-<input type="text" id="inputLokasi" placeholder="Lokasi Ruang / Tempat">
-</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="inputTglMulai">Tanggal Mulai:</label>
+        <input type="date" id="inputTglMulai">
+      </div>
+      <div class="form-group">
+        <label for="inputTglSelesai">Tanggal Selesai:</label>
+        <input type="date" id="inputTglSelesai">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="grid-column: span 2;">
+        <label for="inputWaktu">Waktu/Jam (Format HH:MM - HH:MM):</label>
+        <input type="text" id="inputWaktu" placeholder="Contoh: 08:30 - 12:00">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="inputKegiatan">Nama Kegiatan:</label>
+      <input type="text" id="inputKegiatan" placeholder="Nama Agenda / Kegiatan Utama">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="inputPimpinan">Pimpinan Rapat:</label>
+        <input type="text" id="inputPimpinan" placeholder="Contoh: Danpasgat, Aslog, dll.">
+      </div>
+      <div class="form-group">
+        <label for="inputPersonel">Personel / Peserta:</label>
+        <input type="text" id="inputPersonel" placeholder="Contoh: Perwira Staf, All Member, dll.">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="inputLokasi">Lokasi Ruangan:</label>
+      <input type="text" id="inputLokasi" placeholder="Lokasi Ruang / Tempat">
+    </div>
 
-<button class="btn-add" id="btnAdd" onclick="addNewSchedule()">＋ Tambahkan ke Semua Layar</button>
-<div class="schedule-manager-list" id="managerList"></div>
-</div>
+    <button class="btn-add" id="btnAdd" onclick="addNewSchedule()">＋ Tambahkan ke Semua Layar</button>
+    <div class="schedule-manager-list" id="managerList"></div>
+  </div>
 </div>
 
 <script>
-const dbURL = " https://api.npoint.io/c49be5b5e56876c0a5c8";
+const dbURL = "https://api.npoint.io/79fb87bf4e7964927964";
 
 let systemSchedules = [];
 let currentHours = "00";
@@ -176,388 +389,391 @@ let editIndex = -1;
 let spokenSchedules = new Set();
 let audioCtx = null;
 
-// Mengaktifkan Hardware Audio Context TV secara langsung
 function initAudioEngine() {
-if (!audioCtx) {
-const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-if (AudioContextClass) {
-audioCtx = new AudioContextClass();
-}
-}
-if (audioCtx && audioCtx.state === 'suspended') {
-audioCtx.resume();
-}
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass();
+    }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
 }
 
 function bukaKunciAudioTizen() {
-initAudioEngine();
-document.getElementById('tizenAudioUnlocker').style.display = 'none';
-
-// Nada konfirmasi aktivasi suara
-playChimeNotification([523.25, 659.25, 783.99]);
+  initAudioEngine();
+  document.getElementById('tizenAudioUnlocker').style.display = 'none';
+  playChimeNotification([523.25, 659.25, 783.99]);
 }
 
-// Generator Suara Nada Murni (Bypass Sistem TTS TV)
 function playTone(freq, type, duration, delay = 0) {
-initAudioEngine();
-if (!audioCtx) return;
+  initAudioEngine();
+  if (!audioCtx) return;
 
-setTimeout(() => {
-try {
-const osc = audioCtx.createOscillator();
-const gain = audioCtx.createGain();
+  setTimeout(() => {
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
 
-osc.type = type;
-osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
-gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
 
-osc.connect(gain);
-gain.connect(audioCtx.destination);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
 
-osc.start(audioCtx.currentTime);
-osc.stop(audioCtx.currentTime + duration);
-} catch (e) {
-console.error(e);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + duration);
+    } catch (e) {
+      console.error(e);
+    }
+  }, delay);
 }
-}, delay);
-}
 
-// Pola Bel Pengumuman Otomatis (Aksen Bell TV)
 function playChimeNotification(freqs = [440, 554.37, 659.25]) {
-freqs.forEach((f, i) => {
-playTone(f, 'sine', 0.8, i * 250);
-});
+  freqs.forEach((f, i) => {
+    playTone(f, 'sine', 0.8, i * 250);
+  });
 }
 
-// Fungsi Pemanggilan Pengumuman (Google TTS Online API - 100% Suara Perempuan Indonesia)
 function panggilSuaraAI(teks) {
-playChimeNotification([523.25, 659.25, 783.99, 1046.50]);
+  playChimeNotification([523.25, 659.25, 783.99, 1046.50]);
 
-setTimeout(() => {
-try {
-const existingAudio = document.getElementById('audioTTS');
-if (existingAudio) existingAudio.remove();
+  setTimeout(() => {
+    try {
+      const existingAudio = document.getElementById('audioTTS');
+      if (existingAudio) existingAudio.remove();
 
-const encodedText = encodeURIComponent(teks);
-const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=id&client=tw-ob`;
+      const encodedText = encodeURIComponent(teks);
+      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=id&client=tw-ob`;
 
-const audio = new Audio(ttsUrl);
-audio.id = 'audioTTS';
-audio.playbackRate = 0.95;
-audio.play().catch(() => {
-// Fallback jika koneksi internet lokal bermasalah
-if ('speechSynthesis' in window) {
-window.speechSynthesis.cancel();
-const speech = new SpeechSynthesisUtterance(teks);
-speech.lang = 'id-ID';
-speech.pitch = 1.3;
-window.speechSynthesis.speak(speech);
-}
-});
-} catch (e) {
-console.error("Gagal memutar audio TTS:", e);
-}
-}, 1200);
+      const audio = new Audio(ttsUrl);
+      audio.id = 'audioTTS';
+      audio.playbackRate = 0.95;
+      audio.play().catch(() => {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const speech = new SpeechSynthesisUtterance(teks);
+          speech.lang = 'id-ID';
+          speech.pitch = 1.2;
+          window.speechSynthesis.speak(speech);
+        }
+      });
+    } catch (e) {
+      console.error("Gagal memutar audio TTS:", e);
+    }
+  }, 1200);
 }
 
 function updateDateTime() {
-try {
-const now = new Date();
-currentHours = String(now.getHours()).padStart(2, '0');
-currentMinutes = String(now.getMinutes()).padStart(2, '0');
+  try {
+    const now = new Date();
+    currentHours = String(now.getHours()).padStart(2, '0');
+    currentMinutes = String(now.getMinutes()).padStart(2, '0');
 
-document.getElementById('clock').textContent = `${currentHours}:${currentMinutes}:${String(now.getSeconds()).padStart(2, '0')}`;
+    document.getElementById('clock').textContent = `${currentHours}:${currentMinutes}:${String(now.getSeconds()).padStart(2, '0')}`;
 
-const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-document.getElementById('date').textContent = now.toLocaleDateString('id-ID', options);
+    const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+    document.getElementById('date').textContent = now.toLocaleDateString('id-ID', options);
 
-updateStatusBadges();
-} catch(err) { console.error(err); }
+    updateStatusBadges();
+  } catch(err) { console.error(err); }
 }
 
 async function loadDataFromCloud() {
-try {
-const response = await fetch(`${dbURL}?_=${new Date().getTime()}`);
-if (!response.ok) throw new Error("Gagal mengambil data dari server online");
+  try {
+    const response = await fetch(`${dbURL}?_=${new Date().getTime()}`);
+    if (!response.ok) throw new Error("Gagal mengambil data dari server online");
 
-systemSchedules = await response.json();
-if (!Array.isArray(systemSchedules)) systemSchedules = [];
-renderSchedules(false);
-} catch (e) {
-console.error("Error mengambil data dari cloud:", e);
-}
+    systemSchedules = await response.json();
+    if (!Array.isArray(systemSchedules)) systemSchedules = [];
+    renderSchedules(false);
+  } catch (e) {
+    console.error("Error mengambil data dari cloud:", e);
+  }
 }
 
 async function saveDataToCloud() {
-try {
-await fetch(dbURL, {
-method: 'POST',
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify(systemSchedules)
-});
-} catch (e) {
-console.error("Gagal menyimpan data ke cloud:", e);
-}
+  try {
+    await fetch(dbURL, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(systemSchedules)
+    });
+  } catch (e) {
+    console.error("Gagal menyimpan data ke cloud:", e);
+  }
 }
 
 function formatTanggalIndo(dateStr) {
-if (!dateStr) return '';
-const d = new Date(dateStr);
-if (isNaN(d.getTime())) return dateStr;
-return d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function renderSchedules(shouldSave = true) {
-const mainTbody = document.getElementById('main-table-body');
-const managerList = document.getElementById('managerList');
-if (!mainTbody) return;
+  const mainTbody = document.getElementById('main-table-body');
+  const managerList = document.getElementById('managerList');
+  if (!mainTbody) return;
 
-mainTbody.innerHTML = '';
-if(managerList) managerList.innerHTML = '';
+  mainTbody.innerHTML = '';
+  if(managerList) managerList.innerHTML = '';
 
-if (systemSchedules.length === 0) {
-mainTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Tidak ada agenda kegiatan saat ini. Klik Setting untuk menambah.</td></tr>`;
-if (shouldSave) saveDataToCloud();
-return;
-}
+  if (systemSchedules.length === 0) {
+    mainTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Tidak ada agenda kegiatan saat ini. Klik Pengaturan untuk menambah.</td></tr>`;
+    if (shouldSave) saveDataToCloud();
+    return;
+  }
 
-systemSchedules.sort((a, b) => {
-const dateA = new Date(`${a.tglMulai}T${(a.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
-const dateB = new Date(`${b.tglMulai}T${(b.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
-return dateA - dateB;
-});
+  systemSchedules.sort((a, b) => {
+    const dateA = new Date(`${a.tglMulai}T${(a.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
+    const dateB = new Date(`${b.tglMulai}T${(b.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
+    return dateA - dateB;
+  });
 
-systemSchedules.forEach((item, index) => {
-const cleanTimeRange = item.waktu.replace(/\s+/g, '');
-const tr = document.createElement('tr');
-tr.setAttribute('data-time', cleanTimeRange);
-tr.setAttribute('data-start-date', item.tglMulai || '');
-tr.setAttribute('data-end-date', item.tglSelesai || '');
+  systemSchedules.forEach((item, index) => {
+    const cleanTimeRange = item.waktu.replace(/\s+/g, '');
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-time', cleanTimeRange);
+    tr.setAttribute('data-start-date', item.tglMulai || '');
+    tr.setAttribute('data-end-date', item.tglSelesai || '');
 
-let displayTanggal = '';
-if (item.tglMulai === item.tglSelesai) {
-displayTanggal = formatTanggalIndo(item.tglMulai);
-} else {
-displayTanggal = `${formatTanggalIndo(item.tglMulai)} s/d ${formatTanggalIndo(item.tglSelesai)}`;
-}
+    let displayTanggal = '';
+    if (item.tglMulai === item.tglSelesai) {
+      displayTanggal = formatTanggalIndo(item.tglMulai);
+    } else {
+      displayTanggal = `${formatTanggalIndo(item.tglMulai)} s/d ${formatTanggalIndo(item.tglSelesai)}`;
+    }
 
-const personelInfo = item.personel || '-';
+    const pimpinanInfo = item.pimpinan || '-';
+    const personelInfo = item.personel || '-';
 
-tr.innerHTML = `
-<td class="col-time">
-<div style="font-size:0.95rem; color:#94a3b8; font-weight:normal; margin-bottom:3px;">${displayTanggal}</div>
-<div>${item.waktu}</div>
-</td>
-<td class="col-event">${item.kegiatan}</td>
-<td class="col-personnel">${personelInfo}</td>
-<td class="col-room">${item.lokasi}</td>
-<td style="text-align: center;"><span class="status-badge">Memuat...</span></td>
-`;
-mainTbody.appendChild(tr);
+    tr.innerHTML = `
+      <td class="col-time">
+        <div style="font-size:0.85rem; color:#94a3b8; font-weight:normal; margin-bottom:3px;">${displayTanggal}</div>
+        <div>${item.waktu}</div>
+      </td>
+      <td class="col-event">${item.kegiatan}</td>
+      <td class="col-leader">${pimpinanInfo}</td>
+      <td class="col-personnel">${personelInfo}</td>
+      <td class="col-room">${item.lokasi}</td>
+      <td style="text-align: center;"><span class="status-badge">Memuat...</span></td>
+    `;
+    mainTbody.appendChild(tr);
 
-if(managerList) {
-const managerItem = document.createElement('div');
-managerItem.className = 'manager-item';
-managerItem.innerHTML = `
-<div class="manager-item-text">
-<small style="color:#f59e0b;">${displayTanggal} | ${item.waktu}</small><br>
-<strong>${item.kegiatan}</strong> [${personelInfo}] (${item.lokasi})
-</div>
-<div style="display: flex; gap: 5px;">
-<button onclick="isiFormEdit(${index})" style="background-color: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold;">Edit</button>
-<button class="btn-delete" onclick="deleteSchedule(${index})">Hapus</button>
-</div>
-`;
-managerList.appendChild(managerItem);
-}
-});
+    if(managerList) {
+      const managerItem = document.createElement('div');
+      managerItem.className = 'manager-item';
+      managerItem.innerHTML = `
+        <div class="manager-item-text">
+          <small style="color:#fbbf24;">${displayTanggal} | ${item.waktu}</small><br>
+          <strong>${item.kegiatan}</strong><br>
+          <small style="color:#c084fc;">Pimpinan: ${pimpinanInfo}</small> | <small style="color:#38bdf8;">Peserta: ${personelInfo}</small> (${item.lokasi})
+        </div>
+        <div style="display: flex; gap: 5px;">
+          <button onclick="isiFormEdit(${index})" style="background-color: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">Edit</button>
+          <button class="btn-delete" onclick="deleteSchedule(${index})">Hapus</button>
+        </div>
+      `;
+      managerList.appendChild(managerItem);
+    }
+  });
 
-updateStatusBadges();
-if (shouldSave) saveDataToCloud();
+  updateStatusBadges();
+  if (shouldSave) saveDataToCloud();
 }
 
 function isiFormEdit(index) {
-const item = systemSchedules[index];
-document.getElementById('inputTglMulai').value = item.tglMulai || '';
-document.getElementById('inputTglSelesai').value = item.tglSelesai || item.tglMulai || '';
-document.getElementById('inputWaktu').value = item.waktu || '';
-document.getElementById('inputKegiatan').value = item.kegiatan || '';
-document.getElementById('inputPersonel').value = item.personel || '';
-document.getElementById('inputLokasi').value = item.lokasi || '';
+  const item = systemSchedules[index];
+  document.getElementById('inputTglMulai').value = item.tglMulai || '';
+  document.getElementById('inputTglSelesai').value = item.tglSelesai || item.tglMulai || '';
+  document.getElementById('inputWaktu').value = item.waktu || '';
+  document.getElementById('inputKegiatan').value = item.kegiatan || '';
+  document.getElementById('inputPimpinan').value = item.pimpinan || '';
+  document.getElementById('inputPersonel').value = item.personel || '';
+  document.getElementById('inputLokasi').value = item.lokasi || '';
 
-editIndex = index;
-const btnAdd = document.getElementById('btnAdd');
-btnAdd.textContent = "💾 Simpan Perubahan";
-btnAdd.style.backgroundColor = "#f39c12";
+  editIndex = index;
+  const btnAdd = document.getElementById('btnAdd');
+  btnAdd.textContent = "💾 Simpan Perubahan";
+  btnAdd.style.background = "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)";
 }
 
 async function addNewSchedule() {
-const tglMulai = document.getElementById('inputTglMulai').value;
-const tglSelesai = document.getElementById('inputTglSelesai').value;
-const waktu = document.getElementById('inputWaktu').value.trim();
-const kegiatan = document.getElementById('inputKegiatan').value.trim();
-const personel = document.getElementById('inputPersonel').value.trim();
-const lokasi = document.getElementById('inputLokasi').value.trim();
+  const tglMulai = document.getElementById('inputTglMulai').value;
+  const tglSelesai = document.getElementById('inputTglSelesai').value;
+  const waktu = document.getElementById('inputWaktu').value.trim();
+  const kegiatan = document.getElementById('inputKegiatan').value.trim();
+  const pimpinan = document.getElementById('inputPimpinan').value.trim();
+  const personel = document.getElementById('inputPersonel').value.trim();
+  const lokasi = document.getElementById('inputLokasi').value.trim();
 
-if (!tglMulai || !tglSelesai || !waktu || !kegiatan || !lokasi || !waktu.includes('-')) {
-return alert("Isi dengan benar! Format waktu: 08:30 - 12:00");
-}
+  if (!tglMulai || !tglSelesai || !waktu || !kegiatan || !lokasi || !waktu.includes('-')) {
+    return alert("Isi dengan benar! Format waktu: 08:30 - 12:00");
+  }
 
-if (new Date(tglMulai) > new Date(tglSelesai)) {
-return alert("Tanggal selesai tidak boleh mendahului tanggal mulai!");
-}
+  if (new Date(tglMulai) > new Date(tglSelesai)) {
+    return alert("Tanggal selesai tidak boleh mendahului tanggal mulai!");
+  }
 
-const btnAdd = document.getElementById('btnAdd');
-btnAdd.disabled = true;
+  const btnAdd = document.getElementById('btnAdd');
+  btnAdd.disabled = true;
 
-if (editIndex === -1) {
-systemSchedules.push({ tglMulai, tglSelesai, waktu, kegiatan, personel, lokasi });
-} else {
-const oldItem = systemSchedules[editIndex];
-const oldKey = `${oldItem.tglMulai}-${oldItem.tglSelesai}-${oldItem.waktu.replace(/\s+/g, '')}-${oldItem.kegiatan}`;
+  if (editIndex === -1) {
+    systemSchedules.push({ tglMulai, tglSelesai, waktu, kegiatan, pimpinan, personel, lokasi });
+  } else {
+    const oldItem = systemSchedules[editIndex];
+    const oldKey = `${oldItem.tglMulai}-${oldItem.tglSelesai}-${oldItem.waktu.replace(/\s+/g, '')}-${oldItem.kegiatan}`;
 
-spokenSchedules.delete(`${oldKey}-menunggu`);
-spokenSchedules.delete(`${oldKey}-berlangsung`);
-spokenSchedules.delete(`${oldKey}-selesai`);
+    spokenSchedules.delete(`${oldKey}-menunggu`);
+    spokenSchedules.delete(`${oldKey}-berlangsung`);
+    spokenSchedules.delete(`${oldKey}-selesai`);
 
-systemSchedules[editIndex] = { tglMulai, tglSelesai, waktu, kegiatan, personel, lokasi };
-editIndex = -1;
-btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
-btnAdd.style.backgroundColor = "#10b981";
-}
+    systemSchedules[editIndex] = { tglMulai, tglSelesai, waktu, kegiatan, pimpinan, personel, lokasi };
+    editIndex = -1;
+    btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
+    btnAdd.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+  }
 
-renderSchedules(true);
+  renderSchedules(true);
 
-document.getElementById('inputTglMulai').value = '';
-document.getElementById('inputTglSelesai').value = '';
-document.getElementById('inputWaktu').value = '';
-document.getElementById('inputKegiatan').value = '';
-document.getElementById('inputPersonel').value = '';
-document.getElementById('inputLokasi').value = '';
-btnAdd.disabled = false;
+  document.getElementById('inputTglMulai').value = '';
+  document.getElementById('inputTglSelesai').value = '';
+  document.getElementById('inputWaktu').value = '';
+  document.getElementById('inputKegiatan').value = '';
+  document.getElementById('inputPimpinan').value = '';
+  document.getElementById('inputPersonel').value = '';
+  document.getElementById('inputLokasi').value = '';
+  btnAdd.disabled = false;
 }
 
 function deleteSchedule(index) {
-if (confirm("Hapus jadwal ini?")) {
-if (editIndex === index) {
-editIndex = -1;
-const btnAdd = document.getElementById('btnAdd');
-btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
-btnAdd.style.backgroundColor = "#10b981";
-document.getElementById('inputTglMulai').value = '';
-document.getElementById('inputTglSelesai').value = '';
-document.getElementById('inputWaktu').value = '';
-document.getElementById('inputKegiatan').value = '';
-document.getElementById('inputPersonel').value = '';
-document.getElementById('inputLokasi').value = '';
-}
-systemSchedules.splice(index, 1);
-renderSchedules(true);
-}
+  if (confirm("Hapus jadwal ini?")) {
+    if (editIndex === index) {
+      editIndex = -1;
+      const btnAdd = document.getElementById('btnAdd');
+      btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
+      btnAdd.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+      document.getElementById('inputTglMulai').value = '';
+      document.getElementById('inputTglSelesai').value = '';
+      document.getElementById('inputWaktu').value = '';
+      document.getElementById('inputKegiatan').value = '';
+      document.getElementById('inputPimpinan').value = '';
+      document.getElementById('inputPersonel').value = '';
+      document.getElementById('inputLokasi').value = '';
+    }
+    systemSchedules.splice(index, 1);
+    renderSchedules(true);
+  }
 }
 
 function updateStatusBadges() {
-const now = new Date();
-const waktuSekarangLengkap = now.getTime();
-let hasExpiredItems = false;
+  const now = new Date();
+  const waktuSekarangLengkap = now.getTime();
+  let hasExpiredItems = false;
 
-document.querySelectorAll('#main-table-body tr[data-time]').forEach(row => {
-try {
-const timeRange = row.getAttribute('data-time');
-const startDateStr = row.getAttribute('data-start-date');
-const endDateStr = row.getAttribute('data-end-date');
-if (!timeRange || !timeRange.includes('-') || !startDateStr || !endDateStr) return;
+  document.querySelectorAll('#main-table-body tr[data-time]').forEach(row => {
+    try {
+      const timeRange = row.getAttribute('data-time');
+      const startDateStr = row.getAttribute('data-start-date');
+      const endDateStr = row.getAttribute('data-end-date');
+      if (!timeRange || !timeRange.includes('-') || !startDateStr || !endDateStr) return;
 
-const eventName = row.querySelector('.col-event').textContent || '';
-const personnelName = row.querySelector('.col-personnel').textContent || '';
-const roomName = row.querySelector('.col-room').textContent || '';
-const badge = row.querySelector('.status-badge');
-if (!badge) return;
+      const eventName = row.querySelector('.col-event').textContent || '';
+      const leaderName = row.querySelector('.col-leader').textContent || '';
+      const personnelName = row.querySelector('.col-personnel').textContent || '';
+      const roomName = row.querySelector('.col-room').textContent || '';
+      const badge = row.querySelector('.status-badge');
+      if (!badge) return;
 
-const cleanTimeRange = timeRange.replace(/\./g, ':');
-const [startTime, endTime] = cleanTimeRange.split('-');
-const [jamMulai, menitMulai] = startTime.split(':').map(Number);
-const [jamSelesai, menitSelesai] = endTime.split(':').map(Number);
+      const cleanTimeRange = timeRange.replace(/\./g, ':');
+      const [startTime, endTime] = cleanTimeRange.split('-');
+      const [jamMulai, menitMulai] = startTime.split(':').map(Number);
+      const [jamSelesai, menitSelesai] = endTime.split(':').map(Number);
 
-if (isNaN(jamMulai) || isNaN(jamSelesai)) {
-badge.textContent = 'Format Jam Salah';
-badge.className = 'status-badge status-waiting';
-return;
-}
+      if (isNaN(jamMulai) || isNaN(jamSelesai)) {
+        badge.textContent = 'Format Salah';
+        badge.className = 'status-badge status-waiting';
+        return;
+      }
 
-const waktuMulaiLengkap = new Date(startDateStr).setHours(jamMulai, menitMulai || 0, 0, 0);
-const waktuSelesaiLengkap = new Date(endDateStr).setHours(jamSelesai, menitSelesai || 0, 0, 0);
+      const waktuMulaiLengkap = new Date(startDateStr).setHours(jamMulai, menitMulai || 0, 0, 0);
+      const waktuSelesaiLengkap = new Date(endDateStr).setHours(jamSelesai, menitSelesai || 0, 0, 0);
 
-badge.className = 'status-badge';
-const baseKey = `${startDateStr}-${endDateStr}-${timeRange}-${eventName}`;
-let appendPesertaText = (personnelName && personnelName !== '-') ? ` bersama ${personnelName}` : '';
+      badge.className = 'status-badge';
+      const baseKey = `${startDateStr}-${endDateStr}-${timeRange}-${eventName}`;
+      
+      let pimpinanText = (leaderName && leaderName !== '-') ? `, dipimpin oleh ${leaderName}` : '';
 
-if (waktuSekarangLengkap > waktuSelesaiLengkap) {
-const keySelesai = `${baseKey}-selesai`;
-if (!spokenSchedules.has(keySelesai)) {
-spokenSchedules.add(keySelesai);
-panggilSuaraAI(`Informasi, kegiatan ${eventName}${appendPesertaText} di lokasi ${roomName} telah selesai.`);
-}
+      if (waktuSekarangLengkap > waktuSelesaiLengkap) {
+        const keySelesai = `${baseKey}-selesai`;
+        if (!spokenSchedules.has(keySelesai)) {
+          spokenSchedules.add(keySelesai);
+          panggilSuaraAI(`Informasi, kegiatan ${eventName}${pimpinanText} di lokasi ${roomName} telah selesai.`);
+        }
 
-const expiredIndex = systemSchedules.findIndex(s => 
-s.tglMulai === startDateStr && 
-s.tglSelesai === endDateStr && 
-s.waktu.replace(/\s+/g, '') === timeRange && 
-s.kegiatan === eventName
-);
+        const expiredIndex = systemSchedules.findIndex(s => 
+          s.tglMulai === startDateStr && 
+          s.tglSelesai === endDateStr && 
+          s.waktu.replace(/\s+/g, '') === timeRange && 
+          s.kegiatan === eventName
+        );
 
-if (expiredIndex !== -1) {
-systemSchedules.splice(expiredIndex, 1);
-hasExpiredItems = true;
-}
+        if (expiredIndex !== -1) {
+          systemSchedules.splice(expiredIndex, 1);
+          hasExpiredItems = true;
+        }
 
-} else if (waktuSekarangLengkap >= waktuMulaiLengkap && waktuSekarangLengkap <= waktuSelesaiLengkap) {
-badge.textContent = 'Berlangsung';
-badge.className = 'status-badge status-ongoing';
+      } else if (waktuSekarangLengkap >= waktuMulaiLengkap && waktuSekarangLengkap <= waktuSelesaiLengkap) {
+        badge.textContent = 'Berlangsung';
+        badge.className = 'status-badge status-ongoing';
 
-const keyBerlangsung = `${baseKey}-berlangsung`;
-if (!spokenSchedules.has(keyBerlangsung)) {
-spokenSchedules.add(keyBerlangsung);
-panggilSuaraAI(`Perhatian, kegiatan ${eventName}${appendPesertaText} di lokasi ${roomName} sedang berlangsung.`);
-}
+        const keyBerlangsung = `${baseKey}-berlangsung`;
+        if (!spokenSchedules.has(keyBerlangsung)) {
+          spokenSchedules.add(keyBerlangsung);
+          panggilSuaraAI(`Perhatian, kegiatan ${eventName}${pimpinanText} di lokasi ${roomName} sedang berlangsung.`);
+        }
 
-} else {
-badge.textContent = 'Menunggu';
-badge.className = 'status-badge status-waiting';
+      } else {
+        badge.textContent = 'Menunggu';
+        badge.className = 'status-badge status-waiting';
 
-const keyMenunggu = `${baseKey}-menunggu`;
-if (!spokenSchedules.has(keyMenunggu)) {
-spokenSchedules.add(keyMenunggu);
-panggilSuaraAI(`Pemberitahuan, kegiatan ${eventName}${appendPesertaText} di lokasi ${roomName} dalam status menunggu.`);
-}
-}
+        const keyMenunggu = `${baseKey}-menunggu`;
+        if (!spokenSchedules.has(keyMenunggu)) {
+          spokenSchedules.add(keyMenunggu);
+          panggilSuaraAI(`Pemberitahuan, kegiatan ${eventName}${pimpinanText} di lokasi ${roomName} dalam status menunggu.`);
+        }
+      }
 
-} catch (error) {
-console.error(error);
-}
-});
+    } catch (error) {
+      console.error(error);
+    }
+  });
 
-if (hasExpiredItems) {
-renderSchedules(true);
-}
+  if (hasExpiredItems) {
+    renderSchedules(true);
+  }
 }
 
 function toggleModal(show) {
-if (!show && editIndex !== -1) {
-editIndex = -1;
-const btnAdd = document.getElementById('btnAdd');
-btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
-btnAdd.style.backgroundColor = "#10b981";
-document.getElementById('inputTglMulai').value = '';
-document.getElementById('inputTglSelesai').value = '';
-document.getElementById('inputWaktu').value = '';
-document.getElementById('inputKegiatan').value = '';
-document.getElementById('inputPersonel').value = '';
-document.getElementById('inputLokasi').value = '';
-}
-document.getElementById('settingModal').classList.toggle('active', show);
+  if (!show && editIndex !== -1) {
+    editIndex = -1;
+    const btnAdd = document.getElementById('btnAdd');
+    btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
+    btnAdd.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+    document.getElementById('inputTglMulai').value = '';
+    document.getElementById('inputTglSelesai').value = '';
+    document.getElementById('inputWaktu').value = '';
+    document.getElementById('inputKegiatan').value = '';
+    document.getElementById('inputPimpinan').value = '';
+    document.getElementById('inputPersonel').value = '';
+    document.getElementById('inputLokasi').value = '';
+  }
+  document.getElementById('settingModal').classList.toggle('active', show);
 }
 
 setInterval(updateDateTime, 1000);
