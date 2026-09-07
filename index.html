@@ -10,6 +10,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
+<!-- Engine Suara Cadangan ResponsiveVoice (Wanita Bahasa Indonesia) -->
+<script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
+
 <style>
 * {
   margin: 0; padding: 0; box-sizing: border-box;
@@ -312,7 +315,7 @@ let spokenSchedules = new Set();
 let audioCtx = null;
 let isAudioUnlocked = false;
 
-// Audio Element tunggal global agar bypass Autoplay Restriction di Tizen OS
+// Elemen Audio Tunggal untuk Tizen OS
 const globalAudioPlayer = new Audio();
 globalAudioPlayer.crossOrigin = "anonymous";
 
@@ -351,7 +354,7 @@ function bukaKunciAudioTizen() {
     audioCtx.resume();
   }
 
-  // Tizen butuh dummy play saat tombol ditekan untuk unlock audio engine
+  // Dummy play audio saat tombol diklik untuk unlock audio engine Tizen
   globalAudioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
   globalAudioPlayer.play().then(() => {
     document.getElementById('tizenAudioUnlocker').style.display = 'none';
@@ -390,16 +393,33 @@ function playChimeNotification() {
 function panggilSuaraAI(teks) {
   if (!isAudioUnlocked) return;
 
+  // 1. Bunyikan Chime Notifikasi
   playChimeNotification();
 
+  // 2. Putar Suara AI Wanita setelah chime selesai
   setTimeout(() => {
+    // Jalur Utama: Google TTS Endpoint Kompatibel Tizen
     const encodedText = encodeURIComponent(teks);
-    const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' + encodedText + '&tl=id&client=tw-ob';
+    const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' + encodedText + '&tl=id&total=1&idx=0&textlen=' + teks.length + '&client=tw-ob&prev=input';
 
     globalAudioPlayer.src = ttsUrl;
-    globalAudioPlayer.play().catch(e => {
-      console.error("Tizen Autoplay Blocked TTS:", e);
-    });
+    globalAudioPlayer.load(); // Paksa reload buffer di Tizen OS
+
+    const playPromise = globalAudioPlayer.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(e => {
+        console.warn("Google TTS gagal diputar, menggunakan ResponsiveVoice fallback:", e);
+        
+        // Jalur Cadangan: ResponsiveVoice Wanita Bahasa Indonesia
+        if (window.responsiveVoice) {
+          responsiveVoice.speak(teks, "Indonesian Female", {
+            pitch: 1,
+            rate: 0.95,
+            volume: 1
+          });
+        }
+      });
+    }
   }, 600);
 }
 
