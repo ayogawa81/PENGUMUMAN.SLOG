@@ -5,9 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Display Jadwal Kegiatan Online Synchronized - Cyber Modern</title>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+<!-- Font Google Dipindah ke Tag Link Agar Tidak Diprotes Jekyll -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
+<style>
 * {
   margin: 0; padding: 0; box-sizing: border-box;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -74,7 +77,7 @@ header {
   transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
-main { flex: 1; padding: 30px 40px; display: flex; flex-direction: column; z-index: 1; }
+main { flex: 1; padding: 20px 40px; display: flex; flex-direction: column; z-index: 1; overflow-y: auto; }
 
 .table-container {
   width: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px);
@@ -85,26 +88,28 @@ main { flex: 1; padding: 30px 40px; display: flex; flex-direction: column; z-ind
 table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
 
 th {
-  background: rgba(30, 41, 59, 0.8); color: #38bdf8; font-size: 1.1rem; font-weight: 700;
-  padding: 18px 20px; text-transform: uppercase; letter-spacing: 0.8px;
+  background: rgba(30, 41, 59, 0.8); color: #38bdf8; font-size: 1rem; font-weight: 700;
+  padding: 16px 15px; text-transform: uppercase; letter-spacing: 0.8px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.08);
 }
 
 td {
-  padding: 18px 20px; font-size: 1.15rem; color: #e2e8f0;
+  padding: 14px 15px; font-size: 1rem; color: #e2e8f0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; transition: background 0.2s;
 }
 
 tr:hover td { background: rgba(51, 65, 85, 0.3); }
 
-.col-time { font-weight: 700; color: #fbbf24; width: 22%; font-family: 'JetBrains Mono', monospace; }
-.col-event { width: 22%; font-weight: 600; color: #ffffff; }
-.col-leader { width: 18%; color: #c084fc; font-weight: 600; }
-.col-personnel { width: 16%; color: #38bdf8; font-weight: 500; }
-.col-room { width: 12%; color: #cbd5e1; }
+.col-time { font-weight: 700; color: #fbbf24; font-family: 'JetBrains Mono', monospace; width: 18%; }
+.col-event { font-weight: 600; color: #ffffff; width: 20%; }
+.col-leader { color: #c084fc; font-weight: 600; width: 16%; }
+.col-personnel { color: #38bdf8; font-weight: 500; width: 15%; }
+.col-room { color: #cbd5e1; width: 11%; }
+.col-status { text-align: center; width: 10%; }
+.col-action { text-align: center; width: 10%; }
 
 .status-badge {
-  display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;
+  display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem;
   font-weight: 700; text-transform: uppercase; text-align: center; letter-spacing: 0.5px;
 }
 
@@ -116,6 +121,29 @@ tr:hover td { background: rgba(51, 65, 85, 0.3); }
 .status-waiting { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
 .status-done { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
 
+.btn-action-group { display: flex; gap: 8px; justify-content: center; align-items: center; }
+
+.btn-icon {
+  background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center;
+  cursor: pointer; transition: all 0.2s; color: #f8fafc; fill: currentColor;
+}
+
+.btn-icon svg { width: 18px; height: 18px; }
+
+.btn-edit:hover { background: #f59e0b; border-color: #fbbf24; transform: scale(1.08); }
+.btn-delete:hover { background: #ef4444; border-color: #f87171; transform: scale(1.08); }
+.btn-save { background: #10b981; border-color: #34d399; }
+.btn-save:hover { background: #059669; transform: scale(1.08); }
+
+.edit-input, .edit-select, .edit-date {
+  background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc;
+  padding: 6px 8px; border-radius: 6px; font-size: 0.85rem; width: 100%;
+}
+.edit-time-container { display: flex; flex-direction: column; gap: 4px; }
+.edit-time-group { display: flex; align-items: center; gap: 2px; }
+.edit-select { padding: 4px 2px; font-family: 'JetBrains Mono', monospace; }
+
 .modal-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(2, 6, 23, 0.85);
   backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center;
@@ -124,52 +152,41 @@ tr:hover td { background: rgba(51, 65, 85, 0.3); }
 .modal-overlay.active { opacity: 1; pointer-events: auto; }
 
 .modal-content {
-  background: #0f172a; width: 90%; max-width: 720px; max-height: 90vh;
-  border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.12); padding: 30px;
+  background: #0f172a; width: 90%; max-width: 600px;
+  border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.12); padding: 25px;
   display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
 }
 
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 12px; }
-.modal-header h2 { font-size: 1.4rem; color: #60a5fa; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+.modal-header h2 { font-size: 1.3rem; color: #60a5fa; }
 .btn-close { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; }
 
-.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-.form-group label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.form-group label { font-size: 0.8rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 .form-group input, .time-picker-select {
   background-color: #1e293b; border: 1px solid #334155; color: #f8fafc;
-  padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; width: 100%; color-scheme: dark;
+  padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; width: 100%; color-scheme: dark;
 }
-.form-group input:focus, .time-picker-select:focus { border-color: #3b82f6; outline: none; }
 
-/* Custom Styling Digital Time Picker (Jam:Menit:Detik) */
 .time-picker-group {
   display: flex; align-items: center; gap: 4px; background-color: #1e293b;
   border: 1px solid #334155; padding: 4px 8px; border-radius: 8px;
 }
 
 .time-picker-select {
-  border: none; background: transparent; padding: 6px 2px;
+  border: none; background: transparent; padding: 4px 2px;
   text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700;
-  color: #38bdf8; font-size: 0.95rem; cursor: pointer;
+  color: #38bdf8; font-size: 0.9rem; cursor: pointer;
 }
-
-.time-picker-select option { background-color: #0f172a; color: #f8fafc; }
-.time-separator { color: #94a3b8; font-weight: bold; font-family: 'JetBrains Mono', monospace; }
 
 .btn-add {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;
   padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%;
-  margin-bottom: 15px; font-size: 1rem; margin-top: 10px; transition: all 0.2s;
+  font-size: 1rem; margin-top: 10px; transition: all 0.2s;
 }
 .btn-add:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
-.btn-add:disabled { background: #475569; cursor: not-allowed; }
-
-.schedule-manager-list { flex: 1; overflow-y: auto; border-top: 1px solid #334155; padding-top: 15px; }
-.manager-item { display: flex; justify-content: space-between; align-items: center; background-color: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #334155; gap: 10px; }
-.manager-item-text { font-size: 0.9rem; color: #cbd5e1; flex: 1; }
-.btn-delete { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
 
 #tizenAudioUnlocker {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -199,7 +216,7 @@ tr:hover td { background: rgba(51, 65, 85, 0.3); }
       <div id="clock">00:00:00</div>
       <div id="date">Memuat Tanggal...</div>
     </div>
-    <button class="btn-setting" onclick="toggleModal(true)">⚙️ Pengaturan</button>
+    <button class="btn-setting" onclick="toggleModal(true)">➕ Tambah Agenda</button>
   </div>
 </header>
 
@@ -208,16 +225,17 @@ tr:hover td { background: rgba(51, 65, 85, 0.3); }
     <table>
       <thead>
         <tr>
-          <th style="width: 22%;">Tanggal & Jam (HH:MM:SS)</th>
-          <th style="width: 22%;">Nama Kegiatan / Agenda</th>
-          <th style="width: 18%;">Pimpinan Rapat</th>
-          <th style="width: 16%;">Personel / Peserta</th>
-          <th style="width: 12%;">Lokasi</th>
-          <th style="width: 10%; text-align: center;">Status</th>
+          <th class="col-time">Tanggal & Waktu</th>
+          <th class="col-event">Nama Kegiatan</th>
+          <th class="col-leader">Pimpinan</th>
+          <th class="col-personnel">Personel</th>
+          <th class="col-room">Lokasi</th>
+          <th class="col-status">Status</th>
+          <th class="col-action">Aksi</th>
         </tr>
       </thead>
       <tbody id="main-table-body">
-        <tr><td colspan="6" style="text-align: center; color: #94a3b8;">Menghubungkan ke Database Online Global...</td></tr>
+        <tr><td colspan="7" style="text-align: center; color: #94a3b8;">Menghubungkan ke Database Online Global...</td></tr>
       </tbody>
     </table>
   </div>
@@ -226,7 +244,7 @@ tr:hover td { background: rgba(51, 65, 85, 0.3); }
 <div class="modal-overlay" id="settingModal">
   <div class="modal-content">
     <div class="modal-header">
-      <h2>⚙️ Pengaturan Agenda (Online Database)</h2>
+      <h2>➕ Tambah Agenda Baru</h2>
       <button class="btn-close" onclick="toggleModal(false)">✕</button>
     </div>
 
@@ -241,21 +259,20 @@ tr:hover td { background: rgba(51, 65, 85, 0.3); }
       </div>
     </div>
 
-    <!-- Pemilih Waktu Digital Jam, Menit, Detik -->
     <div class="form-row">
       <div class="form-group">
         <label>Jam Mulai (HH:MM:SS):</label>
         <div class="time-picker-group">
-          <select id="startHour" class="time-picker-select"></select><span class="time-separator">:</span>
-          <select id="startMinute" class="time-picker-select"></select><span class="time-separator">:</span>
+          <select id="startHour" class="time-picker-select"></select><span>:</span>
+          <select id="startMinute" class="time-picker-select"></select><span>:</span>
           <select id="startSecond" class="time-picker-select"></select>
         </div>
       </div>
       <div class="form-group">
         <label>Jam Selesai (HH:MM:SS):</label>
         <div class="time-picker-group">
-          <select id="endHour" class="time-picker-select"></select><span class="time-separator">:</span>
-          <select id="endMinute" class="time-picker-select"></select><span class="time-separator">:</span>
+          <select id="endHour" class="time-picker-select"></select><span>:</span>
+          <select id="endMinute" class="time-picker-select"></select><span>:</span>
           <select id="endSecond" class="time-picker-select"></select>
         </div>
       </div>
@@ -269,11 +286,11 @@ tr:hover td { background: rgba(51, 65, 85, 0.3); }
     <div class="form-row">
       <div class="form-group">
         <label for="inputPimpinan">Pimpinan Rapat:</label>
-        <input type="text" id="inputPimpinan" placeholder="Contoh: Danpasgat, Aslog, dll.">
+        <input type="text" id="inputPimpinan" placeholder="Contoh: Danpasgat, Aslog">
       </div>
       <div class="form-group">
         <label for="inputPersonel">Personel / Peserta:</label>
-        <input type="text" id="inputPersonel" placeholder="Contoh: Perwira Staf, All Member, dll.">
+        <input type="text" id="inputPersonel" placeholder="Contoh: Perwira Staf">
       </div>
     </div>
 
@@ -282,8 +299,7 @@ tr:hover td { background: rgba(51, 65, 85, 0.3); }
       <input type="text" id="inputLokasi" placeholder="Lokasi Ruang / Tempat">
     </div>
 
-    <button class="btn-add" id="btnAdd" onclick="addNewSchedule()">＋ Tambahkan ke Semua Layar</button>
-    <div class="schedule-manager-list" id="managerList"></div>
+    <button class="btn-add" id="btnAdd" onclick="addNewSchedule()">＋ Simpan ke Database</button>
   </div>
 </div>
 
@@ -293,23 +309,28 @@ const dbURL = "https://api.npoint.io/79fb87bf4e7964927964";
 let systemSchedules = [];
 let currentHours = "00";
 let currentMinutes = "00";
-let editIndex = -1;
+let editingRowIndex = -1;
 let spokenSchedules = new Set();
 let audioCtx = null;
 
-// Fungsi Populate Dropdown Time Picker (00-23 Jam, 00-59 Menit/Detik)
+const iconPencil = '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>';
+const iconTrash = '<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+const iconSave = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+
+function generateOptionsHTML(max, selectedVal) {
+  let html = '';
+  for (let i = 0; i < max; i++) {
+    const val = String(i).padStart(2, '0');
+    html += '<option value="' + val + '" ' + (val === selectedVal ? 'selected' : '') + '>' + val + '</option>';
+  }
+  return html;
+}
+
 function initTimePickers() {
   const populateOptions = (selectId, max) => {
     const sel = document.getElementById(selectId);
     if(!sel) return;
-    sel.innerHTML = '';
-    for (let i = 0; i < max; i++) {
-      const val = String(i).padStart(2, '0');
-      const opt = document.createElement('option');
-      opt.value = val;
-      opt.textContent = val;
-      sel.appendChild(opt);
-    }
+    sel.innerHTML = generateOptionsHTML(max, '00');
   };
 
   populateOptions('startHour', 24);
@@ -375,7 +396,7 @@ function panggilSuaraAI(teks) {
       if (existingAudio) existingAudio.remove();
 
       const encodedText = encodeURIComponent(teks);
-      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=id&client=tw-ob`;
+      const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' + encodedText + '&tl=id&client=tw-ob';
 
       const audio = new Audio(ttsUrl);
       audio.id = 'audioTTS';
@@ -401,7 +422,7 @@ function updateDateTime() {
     currentHours = String(now.getHours()).padStart(2, '0');
     currentMinutes = String(now.getMinutes()).padStart(2, '0');
 
-    document.getElementById('clock').textContent = `${currentHours}:${currentMinutes}:${String(now.getSeconds()).padStart(2, '0')}`;
+    document.getElementById('clock').textContent = currentHours + ':' + currentMinutes + ':' + String(now.getSeconds()).padStart(2, '0');
 
     const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
     document.getElementById('date').textContent = now.toLocaleDateString('id-ID', options);
@@ -411,8 +432,9 @@ function updateDateTime() {
 }
 
 async function loadDataFromCloud() {
+  if (editingRowIndex !== -1) return;
   try {
-    const response = await fetch(`${dbURL}?_=${new Date().getTime()}`);
+    const response = await fetch(dbURL + '?_=' + new Date().getTime());
     if (!response.ok) throw new Error("Gagal mengambil data dari server online");
 
     systemSchedules = await response.json();
@@ -444,119 +466,145 @@ function formatTanggalIndo(dateStr) {
 
 function renderSchedules(shouldSave = true) {
   const mainTbody = document.getElementById('main-table-body');
-  const managerList = document.getElementById('managerList');
   if (!mainTbody) return;
 
   mainTbody.innerHTML = '';
-  if(managerList) managerList.innerHTML = '';
 
   if (systemSchedules.length === 0) {
-    mainTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Tidak ada agenda kegiatan saat ini. Klik Pengaturan untuk menambah.</td></tr>`;
+    mainTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8;">Tidak ada agenda kegiatan saat ini. Klik + Tambah Agenda untuk membuat baru.</td></tr>';
     if (shouldSave) saveDataToCloud();
     return;
   }
 
   systemSchedules.sort((a, b) => {
-    const dateA = new Date(`${a.tglMulai}T${(a.waktu.split('-')[0] || '00:00:00').trim().replace(/\./g, ':')}`);
-    const dateB = new Date(`${b.tglMulai}T${(b.waktu.split('-')[0] || '00:00:00').trim().replace(/\./g, ':')}`);
+    const dateA = new Date((a.tglMulai || '') + 'T' + (a.waktu.split('-')[0] || '00:00:00').trim().replace(/\./g, ':'));
+    const dateB = new Date((b.tglMulai || '') + 'T' + (b.waktu.split('-')[0] || '00:00:00').trim().replace(/\./g, ':'));
     return dateA - dateB;
   });
 
   systemSchedules.forEach((item, index) => {
-    const cleanTimeRange = item.waktu.replace(/\s+/g, '');
     const tr = document.createElement('tr');
-    tr.setAttribute('data-time', cleanTimeRange);
-    tr.setAttribute('data-start-date', item.tglMulai || '');
-    tr.setAttribute('data-end-date', item.tglSelesai || '');
+    tr.setAttribute('id', 'row-' + index);
+    
+    if (editingRowIndex === index) {
+      const parts = (item.waktu || '08:00:00 - 10:00:00').split('-');
+      const sParts = parts[0].trim().split(':');
+      const eParts = (parts[1] || '10:00:00').trim().split(':');
 
-    let displayTanggal = '';
-    if (item.tglMulai === item.tglSelesai) {
-      displayTanggal = formatTanggalIndo(item.tglMulai);
+      tr.innerHTML = 
+        '<td class="col-time">' +
+          '<div style="display:flex; flex-direction:column; gap:4px;">' +
+            '<input type="date" class="edit-date" id="edit-tglMulai" value="' + item.tglMulai + '">' +
+            '<input type="date" class="edit-date" id="edit-tglSelesai" value="' + (item.tglSelesai || item.tglMulai) + '">' +
+            '<div class="edit-time-container">' +
+              '<div class="edit-time-group">' +
+                '<select id="edit-sH" class="edit-select">' + generateOptionsHTML(24, sParts[0]) + '</select>:' +
+                '<select id="edit-sM" class="edit-select">' + generateOptionsHTML(60, sParts[1]) + '</select>:' +
+                '<select id="edit-sS" class="edit-select">' + generateOptionsHTML(60, sParts[2]) + '</select>' +
+              '</div>' +
+              '<div class="edit-time-group">' +
+                '<select id="edit-eH" class="edit-select">' + generateOptionsHTML(24, eParts[0]) + '</select>:' +
+                '<select id="edit-eM" class="edit-select">' + generateOptionsHTML(60, eParts[1]) + '</select>:' +
+                '<select id="edit-eS" class="edit-select">' + generateOptionsHTML(60, eParts[2]) + '</select>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</td>' +
+        '<td class="col-event"><input type="text" class="edit-input" id="edit-kegiatan" value="' + item.kegiatan + '"></td>' +
+        '<td class="col-leader"><input type="text" class="edit-input" id="edit-pimpinan" value="' + (item.pimpinan || '') + '"></td>' +
+        '<td class="col-personnel"><input type="text" class="edit-input" id="edit-personel" value="' + (item.personel || '') + '"></td>' +
+        '<td class="col-room"><input type="text" class="edit-input" id="edit-lokasi" value="' + item.lokasi + '"></td>' +
+        '<td class="col-status"><span class="status-badge status-waiting">Edit Mode</span></td>' +
+        '<td class="col-action">' +
+          '<div class="btn-action-group">' +
+            '<button class="btn-icon btn-save" onclick="saveInlineEdit(' + index + ')" title="Simpan">' + iconSave + '</button>' +
+          '</div>' +
+        '</td>';
     } else {
-      displayTanggal = `${formatTanggalIndo(item.tglMulai)} s/d ${formatTanggalIndo(item.tglSelesai)}`;
+      const cleanTimeRange = item.waktu.replace(/\s+/g, '');
+      tr.setAttribute('data-time', cleanTimeRange);
+      tr.setAttribute('data-start-date', item.tglMulai || '');
+      tr.setAttribute('data-end-date', item.tglSelesai || '');
+
+      let displayTanggal = '';
+      if (item.tglMulai === item.tglSelesai) {
+        displayTanggal = formatTanggalIndo(item.tglMulai);
+      } else {
+        displayTanggal = formatTanggalIndo(item.tglMulai) + ' s/d ' + formatTanggalIndo(item.tglSelesai);
+      }
+
+      tr.innerHTML = 
+        '<td class="col-time">' +
+          '<div style="font-size:0.8rem; color:#94a3b8; font-weight:normal; margin-bottom:2px;">' + displayTanggal + '</div>' +
+          '<div>' + item.waktu + '</div>' +
+        '</td>' +
+        '<td class="col-event">' + item.kegiatan + '</td>' +
+        '<td class="col-leader">' + (item.pimpinan || '-') + '</td>' +
+        '<td class="col-personnel">' + (item.personel || '-') + '</td>' +
+        '<td class="col-room">' + item.lokasi + '</td>' +
+        '<td class="col-status"><span class="status-badge">Memuat...</span></td>' +
+        '<td class="col-action">' +
+          '<div class="btn-action-group">' +
+            '<button class="btn-icon btn-edit" onclick="enableInlineEdit(' + index + ')" title="Edit">' + iconPencil + '</button>' +
+            '<button class="btn-icon btn-delete" onclick="deleteSchedule(' + index + ')" title="Hapus">' + iconTrash + '</button>' +
+          '</div>' +
+        '</td>';
     }
 
-    const pimpinanInfo = item.pimpinan || '-';
-    const personelInfo = item.personel || '-';
-
-    tr.innerHTML = `
-      <td class="col-time">
-        <div style="font-size:0.85rem; color:#94a3b8; font-weight:normal; margin-bottom:3px;">${displayTanggal}</div>
-        <div>${item.waktu}</div>
-      </td>
-      <td class="col-event">${item.kegiatan}</td>
-      <td class="col-leader">${pimpinanInfo}</td>
-      <td class="col-personnel">${personelInfo}</td>
-      <td class="col-room">${item.lokasi}</td>
-      <td style="text-align: center;"><span class="status-badge">Memuat...</span></td>
-    `;
     mainTbody.appendChild(tr);
-
-    if(managerList) {
-      const managerItem = document.createElement('div');
-      managerItem.className = 'manager-item';
-      managerItem.innerHTML = `
-        <div class="manager-item-text">
-          <small style="color:#fbbf24;">${displayTanggal} | ${item.waktu}</small><br>
-          <strong>${item.kegiatan}</strong><br>
-          <small style="color:#c084fc;">Pimpinan: ${pimpinanInfo}</small> | <small style="color:#38bdf8;">Peserta: ${personelInfo}</small> (${item.lokasi})
-        </div>
-        <div style="display: flex; gap: 5px;">
-          <button onclick="isiFormEdit(${index})" style="background-color: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">Edit</button>
-          <button class="btn-delete" onclick="deleteSchedule(${index})">Hapus</button>
-        </div>
-      `;
-      managerList.appendChild(managerItem);
-    }
   });
 
   updateStatusBadges();
   if (shouldSave) saveDataToCloud();
 }
 
-function resetForm() {
-  document.getElementById('inputTglMulai').value = '';
-  document.getElementById('inputTglSelesai').value = '';
-  document.getElementById('startHour').value = '08';
-  document.getElementById('startMinute').value = '00';
-  document.getElementById('startSecond').value = '00';
-  document.getElementById('endHour').value = '10';
-  document.getElementById('endMinute').value = '00';
-  document.getElementById('endSecond').value = '00';
-  document.getElementById('inputKegiatan').value = '';
-  document.getElementById('inputPimpinan').value = '';
-  document.getElementById('inputPersonel').value = '';
-  document.getElementById('inputLokasi').value = '';
+function enableInlineEdit(index) {
+  editingRowIndex = index;
+  renderSchedules(false);
 }
 
-function isiFormEdit(index) {
-  const item = systemSchedules[index];
-  document.getElementById('inputTglMulai').value = item.tglMulai || '';
-  document.getElementById('inputTglSelesai').value = item.tglSelesai || item.tglMulai || '';
+function saveInlineEdit(index) {
+  const tglMulai = document.getElementById('edit-tglMulai').value;
+  const tglSelesai = document.getElementById('edit-tglSelesai').value;
   
-  if(item.waktu && item.waktu.includes('-')) {
-    const parts = item.waktu.split('-');
-    const startParts = parts[0].trim().split(':');
-    const endParts = parts[1].trim().split(':');
+  const sH = document.getElementById('edit-sH').value;
+  const sM = document.getElementById('edit-sM').value;
+  const sS = document.getElementById('edit-sS').value;
 
-    document.getElementById('startHour').value = startParts[0] || '08';
-    document.getElementById('startMinute').value = startParts[1] || '00';
-    document.getElementById('startSecond').value = startParts[2] || '00';
+  const eH = document.getElementById('edit-eH').value;
+  const eM = document.getElementById('edit-eM').value;
+  const eS = document.getElementById('edit-eS').value;
 
-    document.getElementById('endHour').value = endParts[0] || '10';
-    document.getElementById('endMinute').value = endParts[1] || '00';
-    document.getElementById('endSecond').value = endParts[2] || '00';
+  const kegiatan = document.getElementById('edit-kegiatan').value.trim();
+  const pimpinan = document.getElementById('edit-pimpinan').value.trim();
+  const personel = document.getElementById('edit-personel').value.trim();
+  const lokasi = document.getElementById('edit-lokasi').value.trim();
+
+  if (!tglMulai || !tglSelesai || !kegiatan || !lokasi) {
+    return alert("Lengkapi data tanggal, kegiatan, dan lokasi!");
   }
 
-  document.getElementById('inputKegiatan').value = item.kegiatan || '';
-  document.getElementById('inputPimpinan').value = item.pimpinan || '';
-  document.getElementById('inputPersonel').value = item.personel || '';
-  document.getElementById('inputLokasi').value = item.lokasi || '';
+  const oldItem = systemSchedules[index];
+  const oldKey = oldItem.tglMulai + '-' + oldItem.tglSelesai + '-' + oldItem.waktu.replace(/\s+/g, '') + '-' + oldItem.kegiatan;
+  spokenSchedules.delete(oldKey + '-menunggu');
+  spokenSchedules.delete(oldKey + '-berlangsung');
+  spokenSchedules.delete(oldKey + '-selesai');
 
-  editIndex = index;
-  const btnAdd = document.getElementById('btnAdd');
-  btnAdd.textContent = "💾 Simpan Perubahan";
-  btnAdd.style.background = "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)";
+  systemSchedules[index] = {
+    tglMulai, tglSelesai,
+    waktu: sH + ':' + sM + ':' + sS + ' - ' + eH + ':' + eM + ':' + eS,
+    kegiatan, pimpinan, personel, lokasi
+  };
+
+  editingRowIndex = -1;
+  renderSchedules(true);
+}
+
+function deleteSchedule(index) {
+  if (confirm("Apakah Anda yakin ingin menghapus agenda ini?")) {
+    systemSchedules.splice(index, 1);
+    renderSchedules(true);
+  }
 }
 
 async function addNewSchedule() {
@@ -571,7 +619,7 @@ async function addNewSchedule() {
   const eM = document.getElementById('endMinute').value;
   const eS = document.getElementById('endSecond').value;
 
-  const waktu = `${sH}:${sM}:${sS} - ${eH}:${eM}:${eS}`;
+  const waktu = sH + ':' + sM + ':' + sS + ' - ' + eH + ':' + eM + ':' + eS;
   const kegiatan = document.getElementById('inputKegiatan').value.trim();
   const pimpinan = document.getElementById('inputPimpinan').value.trim();
   const personel = document.getElementById('inputPersonel').value.trim();
@@ -581,49 +629,19 @@ async function addNewSchedule() {
     return alert("Silakan lengkapi tanggal, kegiatan, dan lokasi!");
   }
 
-  if (new Date(tglMulai) > new Date(tglSelesai)) {
-    return alert("Tanggal selesai tidak boleh mendahului tanggal mulai!");
-  }
-
-  const btnAdd = document.getElementById('btnAdd');
-  btnAdd.disabled = true;
-
-  if (editIndex === -1) {
-    systemSchedules.push({ tglMulai, tglSelesai, waktu, kegiatan, pimpinan, personel, lokasi });
-  } else {
-    const oldItem = systemSchedules[editIndex];
-    const oldKey = `${oldItem.tglMulai}-${oldItem.tglSelesai}-${oldItem.waktu.replace(/\s+/g, '')}-${oldItem.kegiatan}`;
-
-    spokenSchedules.delete(`${oldKey}-menunggu`);
-    spokenSchedules.delete(`${oldKey}-berlangsung`);
-    spokenSchedules.delete(`${oldKey}-selesai`);
-
-    systemSchedules[editIndex] = { tglMulai, tglSelesai, waktu, kegiatan, pimpinan, personel, lokasi };
-    editIndex = -1;
-    btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
-    btnAdd.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
-  }
-
+  systemSchedules.push({ tglMulai, tglSelesai, waktu, kegiatan, pimpinan, personel, lokasi });
   renderSchedules(true);
-  resetForm();
-  btnAdd.disabled = false;
-}
-
-function deleteSchedule(index) {
-  if (confirm("Hapus jadwal ini?")) {
-    if (editIndex === index) {
-      editIndex = -1;
-      const btnAdd = document.getElementById('btnAdd');
-      btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
-      btnAdd.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
-      resetForm();
-    }
-    systemSchedules.splice(index, 1);
-    renderSchedules(true);
-  }
+  
+  document.getElementById('inputKegiatan').value = '';
+  document.getElementById('inputPimpinan').value = '';
+  document.getElementById('inputPersonel').value = '';
+  document.getElementById('inputLokasi').value = '';
+  toggleModal(false);
 }
 
 function updateStatusBadges() {
+  if (editingRowIndex !== -1) return;
+
   const now = new Date();
   const waktuSekarangLengkap = now.getTime();
   let hasExpiredItems = false;
@@ -650,25 +668,19 @@ function updateStatusBadges() {
       const jamMulai = startParts[0], menitMulai = startParts[1] || 0, detikMulai = startParts[2] || 0;
       const jamSelesai = endParts[0], menitSelesai = endParts[1] || 0, detikSelesai = endParts[2] || 0;
 
-      if (isNaN(jamMulai) || isNaN(jamSelesai)) {
-        badge.textContent = 'Format Salah';
-        badge.className = 'status-badge status-waiting';
-        return;
-      }
-
       const waktuMulaiLengkap = new Date(startDateStr).setHours(jamMulai, menitMulai, detikMulai, 0);
       const waktuSelesaiLengkap = new Date(endDateStr).setHours(jamSelesai, menitSelesai, detikSelesai, 0);
 
       badge.className = 'status-badge';
-      const baseKey = `${startDateStr}-${endDateStr}-${timeRange}-${eventName}`;
+      const baseKey = startDateStr + '-' + endDateStr + '-' + timeRange + '-' + eventName;
       
-      let pimpinanText = (leaderName && leaderName !== '-') ? `, dipimpin oleh ${leaderName}` : '';
+      let pimpinanText = (leaderName && leaderName !== '-') ? ', dipimpin oleh ' + leaderName : '';
 
       if (waktuSekarangLengkap > waktuSelesaiLengkap) {
-        const keySelesai = `${baseKey}-selesai`;
+        const keySelesai = baseKey + '-selesai';
         if (!spokenSchedules.has(keySelesai)) {
           spokenSchedules.add(keySelesai);
-          panggilSuaraAI(`Informasi, kegiatan ${eventName}${pimpinanText} di lokasi ${roomName} telah selesai.`);
+          panggilSuaraAI('Informasi, kegiatan ' + eventName + pimpinanText + ' di lokasi ' + roomName + ' telah selesai.');
         }
 
         const expiredIndex = systemSchedules.findIndex(s => 
@@ -687,20 +699,20 @@ function updateStatusBadges() {
         badge.textContent = 'Berlangsung';
         badge.className = 'status-badge status-ongoing';
 
-        const keyBerlangsung = `${baseKey}-berlangsung`;
+        const keyBerlangsung = baseKey + '-berlangsung';
         if (!spokenSchedules.has(keyBerlangsung)) {
           spokenSchedules.add(keyBerlangsung);
-          panggilSuaraAI(`Perhatian, kegiatan ${eventName}${pimpinanText} di lokasi ${roomName} sedang berlangsung.`);
+          panggilSuaraAI('Perhatian, kegiatan ' + eventName + pimpinanText + ' di lokasi ' + roomName + ' sedang berlangsung.');
         }
 
       } else {
         badge.textContent = 'Menunggu';
         badge.className = 'status-badge status-waiting';
 
-        const keyMenunggu = `${baseKey}-menunggu`;
+        const keyMenunggu = baseKey + '-menunggu';
         if (!spokenSchedules.has(keyMenunggu)) {
           spokenSchedules.add(keyMenunggu);
-          panggilSuaraAI(`Pemberitahuan, kegiatan ${eventName}${pimpinanText} di lokasi ${roomName} dalam status menunggu.`);
+          panggilSuaraAI('Pemberitahuan, kegiatan ' + eventName + pimpinanText + ' di lokasi ' + roomName + ' dalam status menunggu.');
         }
       }
 
@@ -715,19 +727,11 @@ function updateStatusBadges() {
 }
 
 function toggleModal(show) {
-  if (!show && editIndex !== -1) {
-    editIndex = -1;
-    const btnAdd = document.getElementById('btnAdd');
-    btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
-    btnAdd.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
-    resetForm();
-  }
   document.getElementById('settingModal').classList.toggle('active', show);
 }
 
 // Inisialisasi awal
 initTimePickers();
-resetForm();
 setInterval(updateDateTime, 1000);
 updateDateTime();
 loadDataFromCloud();
