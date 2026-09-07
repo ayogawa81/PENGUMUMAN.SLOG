@@ -5,13 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Display Jadwal Kegiatan Online Synchronized - Cyber Modern</title>
 
-<!-- Font Google -->
+<!-- Font Google Dipindah ke Tag Link Agar Tidak Diprotes Jekyll -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-
-<!-- Engine Suara Cadangan ResponsiveVoice (Wanita Bahasa Indonesia) -->
-<script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
 
 <style>
 * {
@@ -313,11 +310,6 @@ let currentMinutes = "00";
 let editingRowIndex = -1;
 let spokenSchedules = new Set();
 let audioCtx = null;
-let isAudioUnlocked = false;
-
-// Elemen Audio Tunggal untuk Tizen OS
-const globalAudioPlayer = new Audio();
-globalAudioPlayer.crossOrigin = "anonymous";
 
 const iconPencil = '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>';
 const iconTrash = '<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
@@ -345,82 +337,79 @@ function initTimePickers() {
   populateOptions('endMinute', 60);
 }
 
-function bukaKunciAudioTizen() {
-  isAudioUnlocked = true;
-  
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  if (AudioContextClass) {
-    audioCtx = new AudioContextClass();
-    audioCtx.resume();
+function initAudioEngine() {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) audioCtx = new AudioContextClass();
   }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
 
-  // Dummy play audio saat tombol diklik untuk unlock audio engine Tizen
-  globalAudioPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
-  globalAudioPlayer.play().then(() => {
-    document.getElementById('tizenAudioUnlocker').style.display = 'none';
-    panggilSuaraAI("Sistem audio monitoring Tizen berhasil diaktifkan.");
-  }).catch(err => {
-    console.log("Retry unlock Tizen...", err);
-    document.getElementById('tizenAudioUnlocker').style.display = 'none';
+function bukaKunciAudioTizen() {
+  initAudioEngine();
+  document.getElementById('tizenAudioUnlocker').style.display = 'none';
+  playChimeNotification([523.25, 659.25, 783.99]);
+}
+
+function playTone(freq, type, duration, delay = 0) {
+  initAudioEngine();
+  if (!audioCtx) return;
+
+  setTimeout(() => {
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + duration);
+    } catch (e) {
+      console.error(e);
+    }
+  }, delay);
+}
+
+function playChimeNotification(freqs = [440, 554.37, 659.25]) {
+  freqs.forEach((f, i) => {
+    playTone(f, 'sine', 0.8, i * 250);
   });
 }
 
-function playTone(freq, duration) {
-  if (!audioCtx) return;
-  try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-function playChimeNotification() {
-  if (!audioCtx) return;
-  playTone(523.25, 0.4);
-  setTimeout(() => playTone(659.25, 0.4), 150);
-  setTimeout(() => playTone(783.99, 0.5), 300);
-}
-
 function panggilSuaraAI(teks) {
-  if (!isAudioUnlocked) return;
+  playChimeNotification([523.25, 659.25, 783.99, 1046.50]);
 
-  // 1. Bunyikan Chime Notifikasi
-  playChimeNotification();
-
-  // 2. Putar Suara AI Wanita setelah chime selesai
   setTimeout(() => {
-    // Jalur Utama: Google TTS Endpoint Kompatibel Tizen
-    const encodedText = encodeURIComponent(teks);
-    const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' + encodedText + '&tl=id&total=1&idx=0&textlen=' + teks.length + '&client=tw-ob&prev=input';
+    try {
+      const existingAudio = document.getElementById('audioTTS');
+      if (existingAudio) existingAudio.remove();
 
-    globalAudioPlayer.src = ttsUrl;
-    globalAudioPlayer.load(); // Paksa reload buffer di Tizen OS
+      const encodedText = encodeURIComponent(teks);
+      const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' + encodedText + '&tl=id&client=tw-ob';
 
-    const playPromise = globalAudioPlayer.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(e => {
-        console.warn("Google TTS gagal diputar, menggunakan ResponsiveVoice fallback:", e);
-        
-        // Jalur Cadangan: ResponsiveVoice Wanita Bahasa Indonesia
-        if (window.responsiveVoice) {
-          responsiveVoice.speak(teks, "Indonesian Female", {
-            pitch: 1,
-            rate: 0.95,
-            volume: 1
-          });
+      const audio = new Audio(ttsUrl);
+      audio.id = 'audioTTS';
+      audio.playbackRate = 0.95;
+      audio.play().catch(() => {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const speech = new SpeechSynthesisUtterance(teks);
+          speech.lang = 'id-ID';
+          speech.pitch = 1.2;
+          window.speechSynthesis.speak(speech);
         }
       });
+    } catch (e) {
+      console.error("Gagal memutar audio TTS:", e);
     }
-  }, 600);
+  }, 1200);
 }
 
 function updateDateTime() {
@@ -442,13 +431,13 @@ async function loadDataFromCloud() {
   if (editingRowIndex !== -1) return;
   try {
     const response = await fetch(dbURL + '?_=' + new Date().getTime());
-    if (!response.ok) throw new Error("Gagal mengambil data dari server");
+    if (!response.ok) throw new Error("Gagal mengambil data dari server online");
 
     systemSchedules = await response.json();
     if (!Array.isArray(systemSchedules)) systemSchedules = [];
     renderSchedules(false);
   } catch (e) {
-    console.error("Error cloud:", e);
+    console.error("Error mengambil data dari cloud:", e);
   }
 }
 
@@ -460,7 +449,7 @@ async function saveDataToCloud() {
       body: JSON.stringify(systemSchedules)
     });
   } catch (e) {
-    console.error("Gagal simpan cloud:", e);
+    console.error("Gagal menyimpan data ke cloud:", e);
   }
 }
 
@@ -478,7 +467,7 @@ function renderSchedules(shouldSave = true) {
   mainTbody.innerHTML = '';
 
   if (systemSchedules.length === 0) {
-    mainTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8;">Tidak ada agenda kegiatan saat ini.</td></tr>';
+    mainTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8;">Tidak ada agenda kegiatan saat ini. Klik + Tambah Agenda untuk membuat baru.</td></tr>';
     if (shouldSave) saveDataToCloud();
     return;
   }
@@ -674,6 +663,7 @@ function updateStatusBadges() {
 
       badge.className = 'status-badge';
       const baseKey = startDateStr + '-' + endDateStr + '-' + timeRange + '-' + eventName;
+      
       let pimpinanText = (leaderName && leaderName !== '-') ? ', dipimpin oleh ' + leaderName : '';
 
       if (waktuSekarangLengkap > waktuSelesaiLengkap) {
