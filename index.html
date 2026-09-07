@@ -23,228 +23,110 @@ body {
   position: relative;
 }
 
-/* Background Glowing Accents */
 body::before {
-  content: '';
-  position: absolute;
-  top: -10%; left: -10%;
-  width: 40%; height: 40%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0,0,0,0) 70%);
-  pointer-events: none;
+  content: ''; position: absolute; top: -10%; left: -10%; width: 40%; height: 40%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0,0,0,0) 70%); pointer-events: none;
 }
 
 body::after {
-  content: '';
-  position: absolute;
-  bottom: -10%; right: -10%;
-  width: 40%; height: 40%;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(0,0,0,0) 70%);
-  pointer-events: none;
+  content: ''; position: absolute; bottom: -10%; right: -10%; width: 40%; height: 40%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(0,0,0,0) 70%); pointer-events: none;
 }
 
 header {
   background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 18px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  padding: 18px 40px; display: flex; justify-content: space-between; align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  z-index: 10;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); z-index: 10;
 }
 
 .logo-title h1 {
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: 1.5px;
+  font-size: 2rem; font-weight: 800; letter-spacing: 1.5px;
   background: linear-gradient(135deg, #60a5fa 0%, #a855f7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-transform: uppercase;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;
 }
 
-.logo-title p {
-  color: #94a3b8;
-  font-size: 1rem;
-  margin-top: 4px;
-  font-weight: 400;
-}
+.logo-title p { color: #94a3b8; font-size: 1rem; margin-top: 4px; font-weight: 400; }
 
 .datetime-container {
-  text-align: right;
-  background: rgba(30, 41, 59, 0.5);
-  backdrop-filter: blur(10px);
-  padding: 10px 24px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  text-align: right; background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px);
+  padding: 10px 24px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex; align-items: center; gap: 20px;
 }
 
 #clock {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 2.3rem;
-  font-weight: 700;
-  color: #38bdf8;
-  text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
-  line-height: 1;
+  font-family: 'JetBrains Mono', monospace; font-size: 2.3rem; font-weight: 700;
+  color: #38bdf8; text-shadow: 0 0 12px rgba(56, 189, 248, 0.4); line-height: 1;
 }
 
-#date {
-  font-size: 0.95rem;
-  color: #cbd5e1;
-  margin-top: 4px;
-  font-weight: 500;
-}
+#date { font-size: 0.95rem; color: #cbd5e1; margin-top: 4px; font-weight: 500; }
 
 .btn-setting {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  color: #f8fafc;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 10px 18px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px 18px; border-radius: 12px;
+  cursor: pointer; font-weight: 600; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .btn-setting:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  border-color: #60a5fa;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-color: #60a5fa;
+  transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
-main {
-  flex: 1;
-  padding: 30px 40px;
-  display: flex;
-  flex-direction: column;
-  z-index: 1;
-}
+main { flex: 1; padding: 30px 40px; display: flex; flex-direction: column; z-index: 1; }
 
 .table-container {
-  width: 100%;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(12px);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  width: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px);
+  border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  text-align: left;
-}
+table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
 
 th {
-  background: rgba(30, 41, 59, 0.8);
-  color: #38bdf8;
-  font-size: 1.1rem;
-  font-weight: 700;
-  padding: 18px 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
+  background: rgba(30, 41, 59, 0.8); color: #38bdf8; font-size: 1.1rem; font-weight: 700;
+  padding: 18px 20px; text-transform: uppercase; letter-spacing: 0.8px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.08);
 }
 
 td {
-  padding: 18px 20px;
-  font-size: 1.15rem;
-  color: #e2e8f0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  vertical-align: middle;
-  transition: background 0.2s;
+  padding: 18px 20px; font-size: 1.15rem; color: #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; transition: background 0.2s;
 }
 
-tr:hover td {
-  background: rgba(51, 65, 85, 0.3);
-}
+tr:hover td { background: rgba(51, 65, 85, 0.3); }
 
-.col-time {
-  font-weight: 700;
-  color: #fbbf24;
-  width: 20%;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.col-event {
-  width: 24%;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.col-leader {
-  width: 18%;
-  color: #c084fc;
-  font-weight: 600;
-}
-
-.col-personnel {
-  width: 16%;
-  color: #38bdf8;
-  font-weight: 500;
-}
-
-.col-room {
-  width: 12%;
-  color: #cbd5e1;
-}
+.col-time { font-weight: 700; color: #fbbf24; width: 22%; font-family: 'JetBrains Mono', monospace; }
+.col-event { width: 22%; font-weight: 600; color: #ffffff; }
+.col-leader { width: 18%; color: #c084fc; font-weight: 600; }
+.col-personnel { width: 16%; color: #38bdf8; font-weight: 500; }
+.col-room { width: 12%; color: #cbd5e1; }
 
 .status-badge {
-  display: inline-block;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  text-align: center;
-  letter-spacing: 0.5px;
+  display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;
+  font-weight: 700; text-transform: uppercase; text-align: center; letter-spacing: 0.5px;
 }
 
 .status-ongoing {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  border: 1px solid rgba(96, 165, 250, 0.4);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.15); color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.4); box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
 }
 
-.status-waiting {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(251, 191, 36, 0.4);
-}
-
-.status-done {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(52, 211, 153, 0.4);
-}
+.status-waiting { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
+.status-done { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
 
 .modal-overlay {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(2, 6, 23, 0.85);
-  backdrop-filter: blur(10px);
-  display: flex; justify-content: center; align-items: center;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center;
   z-index: 1000; opacity: 0; pointer-events: none; transition: all 0.3s ease;
 }
 .modal-overlay.active { opacity: 1; pointer-events: auto; }
 
 .modal-content {
-  background: #0f172a;
-  width: 90%; max-width: 700px; max-height: 90vh;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 30px;
-  display: flex; flex-direction: column;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  background: #0f172a; width: 90%; max-width: 720px; max-height: 90vh;
+  border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.12); padding: 30px;
+  display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
 }
 
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 12px; }
@@ -254,23 +136,32 @@ tr:hover td {
 .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
 .form-group label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.form-group input {
-  background-color: #1e293b;
-  border: 1px solid #334155;
-  color: #f8fafc;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  width: 100%;
-  color-scheme: dark;
+
+.form-group input, .time-picker-select {
+  background-color: #1e293b; border: 1px solid #334155; color: #f8fafc;
+  padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; width: 100%; color-scheme: dark;
 }
-.form-group input:focus { border-color: #3b82f6; outline: none; }
+.form-group input:focus, .time-picker-select:focus { border-color: #3b82f6; outline: none; }
+
+/* Custom Styling Digital Time Picker (Jam:Menit:Detik) */
+.time-picker-group {
+  display: flex; align-items: center; gap: 4px; background-color: #1e293b;
+  border: 1px solid #334155; padding: 4px 8px; border-radius: 8px;
+}
+
+.time-picker-select {
+  border: none; background: transparent; padding: 6px 2px;
+  text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  color: #38bdf8; font-size: 0.95rem; cursor: pointer;
+}
+
+.time-picker-select option { background-color: #0f172a; color: #f8fafc; }
+.time-separator { color: #94a3b8; font-weight: bold; font-family: 'JetBrains Mono', monospace; }
 
 .btn-add {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white; border: none; padding: 12px; border-radius: 10px;
-  font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 15px; font-size: 1rem; margin-top: 10px;
-  transition: all 0.2s;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;
+  padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%;
+  margin-bottom: 15px; font-size: 1rem; margin-top: 10px; transition: all 0.2s;
 }
 .btn-add:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
 .btn-add:disabled { background: #475569; cursor: not-allowed; }
@@ -317,8 +208,8 @@ tr:hover td {
     <table>
       <thead>
         <tr>
-          <th style="width: 20%;">Tanggal & Waktu</th>
-          <th style="width: 24%;">Nama Kegiatan / Agenda</th>
+          <th style="width: 22%;">Tanggal & Jam (HH:MM:SS)</th>
+          <th style="width: 22%;">Nama Kegiatan / Agenda</th>
           <th style="width: 18%;">Pimpinan Rapat</th>
           <th style="width: 16%;">Personel / Peserta</th>
           <th style="width: 12%;">Lokasi</th>
@@ -349,16 +240,32 @@ tr:hover td {
         <input type="date" id="inputTglSelesai">
       </div>
     </div>
+
+    <!-- Pemilih Waktu Digital Jam, Menit, Detik -->
     <div class="form-row">
-      <div class="form-group" style="grid-column: span 2;">
-        <label for="inputWaktu">Waktu/Jam (Format HH:MM - HH:MM):</label>
-        <input type="text" id="inputWaktu" placeholder="Contoh: 08:30 - 12:00">
+      <div class="form-group">
+        <label>Jam Mulai (HH:MM:SS):</label>
+        <div class="time-picker-group">
+          <select id="startHour" class="time-picker-select"></select><span class="time-separator">:</span>
+          <select id="startMinute" class="time-picker-select"></select><span class="time-separator">:</span>
+          <select id="startSecond" class="time-picker-select"></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Jam Selesai (HH:MM:SS):</label>
+        <div class="time-picker-group">
+          <select id="endHour" class="time-picker-select"></select><span class="time-separator">:</span>
+          <select id="endMinute" class="time-picker-select"></select><span class="time-separator">:</span>
+          <select id="endSecond" class="time-picker-select"></select>
+        </div>
       </div>
     </div>
+
     <div class="form-group">
       <label for="inputKegiatan">Nama Kegiatan:</label>
       <input type="text" id="inputKegiatan" placeholder="Nama Agenda / Kegiatan Utama">
     </div>
+
     <div class="form-row">
       <div class="form-group">
         <label for="inputPimpinan">Pimpinan Rapat:</label>
@@ -369,6 +276,7 @@ tr:hover td {
         <input type="text" id="inputPersonel" placeholder="Contoh: Perwira Staf, All Member, dll.">
       </div>
     </div>
+
     <div class="form-group">
       <label for="inputLokasi">Lokasi Ruangan:</label>
       <input type="text" id="inputLokasi" placeholder="Lokasi Ruang / Tempat">
@@ -389,16 +297,35 @@ let editIndex = -1;
 let spokenSchedules = new Set();
 let audioCtx = null;
 
+// Fungsi Populate Dropdown Time Picker (00-23 Jam, 00-59 Menit/Detik)
+function initTimePickers() {
+  const populateOptions = (selectId, max) => {
+    const sel = document.getElementById(selectId);
+    if(!sel) return;
+    sel.innerHTML = '';
+    for (let i = 0; i < max; i++) {
+      const val = String(i).padStart(2, '0');
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = val;
+      sel.appendChild(opt);
+    }
+  };
+
+  populateOptions('startHour', 24);
+  populateOptions('startMinute', 60);
+  populateOptions('startSecond', 60);
+  populateOptions('endHour', 24);
+  populateOptions('endMinute', 60);
+  populateOptions('endSecond', 60);
+}
+
 function initAudioEngine() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) {
-      audioCtx = new AudioContextClass();
-    }
+    if (AudioContextClass) audioCtx = new AudioContextClass();
   }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
 }
 
 function bukaKunciAudioTizen() {
@@ -530,8 +457,8 @@ function renderSchedules(shouldSave = true) {
   }
 
   systemSchedules.sort((a, b) => {
-    const dateA = new Date(`${a.tglMulai}T${(a.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
-    const dateB = new Date(`${b.tglMulai}T${(b.waktu.split('-')[0] || '00:00').trim().replace('.', ':')}`);
+    const dateA = new Date(`${a.tglMulai}T${(a.waktu.split('-')[0] || '00:00:00').trim().replace(/\./g, ':')}`);
+    const dateB = new Date(`${b.tglMulai}T${(b.waktu.split('-')[0] || '00:00:00').trim().replace(/\./g, ':')}`);
     return dateA - dateB;
   });
 
@@ -587,11 +514,40 @@ function renderSchedules(shouldSave = true) {
   if (shouldSave) saveDataToCloud();
 }
 
+function resetForm() {
+  document.getElementById('inputTglMulai').value = '';
+  document.getElementById('inputTglSelesai').value = '';
+  document.getElementById('startHour').value = '08';
+  document.getElementById('startMinute').value = '00';
+  document.getElementById('startSecond').value = '00';
+  document.getElementById('endHour').value = '10';
+  document.getElementById('endMinute').value = '00';
+  document.getElementById('endSecond').value = '00';
+  document.getElementById('inputKegiatan').value = '';
+  document.getElementById('inputPimpinan').value = '';
+  document.getElementById('inputPersonel').value = '';
+  document.getElementById('inputLokasi').value = '';
+}
+
 function isiFormEdit(index) {
   const item = systemSchedules[index];
   document.getElementById('inputTglMulai').value = item.tglMulai || '';
   document.getElementById('inputTglSelesai').value = item.tglSelesai || item.tglMulai || '';
-  document.getElementById('inputWaktu').value = item.waktu || '';
+  
+  if(item.waktu && item.waktu.includes('-')) {
+    const parts = item.waktu.split('-');
+    const startParts = parts[0].trim().split(':');
+    const endParts = parts[1].trim().split(':');
+
+    document.getElementById('startHour').value = startParts[0] || '08';
+    document.getElementById('startMinute').value = startParts[1] || '00';
+    document.getElementById('startSecond').value = startParts[2] || '00';
+
+    document.getElementById('endHour').value = endParts[0] || '10';
+    document.getElementById('endMinute').value = endParts[1] || '00';
+    document.getElementById('endSecond').value = endParts[2] || '00';
+  }
+
   document.getElementById('inputKegiatan').value = item.kegiatan || '';
   document.getElementById('inputPimpinan').value = item.pimpinan || '';
   document.getElementById('inputPersonel').value = item.personel || '';
@@ -606,14 +562,23 @@ function isiFormEdit(index) {
 async function addNewSchedule() {
   const tglMulai = document.getElementById('inputTglMulai').value;
   const tglSelesai = document.getElementById('inputTglSelesai').value;
-  const waktu = document.getElementById('inputWaktu').value.trim();
+  
+  const sH = document.getElementById('startHour').value;
+  const sM = document.getElementById('startMinute').value;
+  const sS = document.getElementById('startSecond').value;
+
+  const eH = document.getElementById('endHour').value;
+  const eM = document.getElementById('endMinute').value;
+  const eS = document.getElementById('endSecond').value;
+
+  const waktu = `${sH}:${sM}:${sS} - ${eH}:${eM}:${eS}`;
   const kegiatan = document.getElementById('inputKegiatan').value.trim();
   const pimpinan = document.getElementById('inputPimpinan').value.trim();
   const personel = document.getElementById('inputPersonel').value.trim();
   const lokasi = document.getElementById('inputLokasi').value.trim();
 
-  if (!tglMulai || !tglSelesai || !waktu || !kegiatan || !lokasi || !waktu.includes('-')) {
-    return alert("Isi dengan benar! Format waktu: 08:30 - 12:00");
+  if (!tglMulai || !tglSelesai || !kegiatan || !lokasi) {
+    return alert("Silakan lengkapi tanggal, kegiatan, dan lokasi!");
   }
 
   if (new Date(tglMulai) > new Date(tglSelesai)) {
@@ -640,14 +605,7 @@ async function addNewSchedule() {
   }
 
   renderSchedules(true);
-
-  document.getElementById('inputTglMulai').value = '';
-  document.getElementById('inputTglSelesai').value = '';
-  document.getElementById('inputWaktu').value = '';
-  document.getElementById('inputKegiatan').value = '';
-  document.getElementById('inputPimpinan').value = '';
-  document.getElementById('inputPersonel').value = '';
-  document.getElementById('inputLokasi').value = '';
+  resetForm();
   btnAdd.disabled = false;
 }
 
@@ -658,13 +616,7 @@ function deleteSchedule(index) {
       const btnAdd = document.getElementById('btnAdd');
       btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
       btnAdd.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
-      document.getElementById('inputTglMulai').value = '';
-      document.getElementById('inputTglSelesai').value = '';
-      document.getElementById('inputWaktu').value = '';
-      document.getElementById('inputKegiatan').value = '';
-      document.getElementById('inputPimpinan').value = '';
-      document.getElementById('inputPersonel').value = '';
-      document.getElementById('inputLokasi').value = '';
+      resetForm();
     }
     systemSchedules.splice(index, 1);
     renderSchedules(true);
@@ -685,15 +637,18 @@ function updateStatusBadges() {
 
       const eventName = row.querySelector('.col-event').textContent || '';
       const leaderName = row.querySelector('.col-leader').textContent || '';
-      const personnelName = row.querySelector('.col-personnel').textContent || '';
       const roomName = row.querySelector('.col-room').textContent || '';
       const badge = row.querySelector('.status-badge');
       if (!badge) return;
 
       const cleanTimeRange = timeRange.replace(/\./g, ':');
       const [startTime, endTime] = cleanTimeRange.split('-');
-      const [jamMulai, menitMulai] = startTime.split(':').map(Number);
-      const [jamSelesai, menitSelesai] = endTime.split(':').map(Number);
+      
+      const startParts = startTime.split(':').map(Number);
+      const endParts = endTime.split(':').map(Number);
+
+      const jamMulai = startParts[0], menitMulai = startParts[1] || 0, detikMulai = startParts[2] || 0;
+      const jamSelesai = endParts[0], menitSelesai = endParts[1] || 0, detikSelesai = endParts[2] || 0;
 
       if (isNaN(jamMulai) || isNaN(jamSelesai)) {
         badge.textContent = 'Format Salah';
@@ -701,8 +656,8 @@ function updateStatusBadges() {
         return;
       }
 
-      const waktuMulaiLengkap = new Date(startDateStr).setHours(jamMulai, menitMulai || 0, 0, 0);
-      const waktuSelesaiLengkap = new Date(endDateStr).setHours(jamSelesai, menitSelesai || 0, 0, 0);
+      const waktuMulaiLengkap = new Date(startDateStr).setHours(jamMulai, menitMulai, detikMulai, 0);
+      const waktuSelesaiLengkap = new Date(endDateStr).setHours(jamSelesai, menitSelesai, detikSelesai, 0);
 
       badge.className = 'status-badge';
       const baseKey = `${startDateStr}-${endDateStr}-${timeRange}-${eventName}`;
@@ -765,17 +720,14 @@ function toggleModal(show) {
     const btnAdd = document.getElementById('btnAdd');
     btnAdd.textContent = "＋ Tambahkan ke Semua Layar";
     btnAdd.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
-    document.getElementById('inputTglMulai').value = '';
-    document.getElementById('inputTglSelesai').value = '';
-    document.getElementById('inputWaktu').value = '';
-    document.getElementById('inputKegiatan').value = '';
-    document.getElementById('inputPimpinan').value = '';
-    document.getElementById('inputPersonel').value = '';
-    document.getElementById('inputLokasi').value = '';
+    resetForm();
   }
   document.getElementById('settingModal').classList.toggle('active', show);
 }
 
+// Inisialisasi awal
+initTimePickers();
+resetForm();
 setInterval(updateDateTime, 1000);
 updateDateTime();
 loadDataFromCloud();
