@@ -146,29 +146,36 @@ tr:hover td { background: rgba(51, 65, 85, 0.4); }
   font-weight: 800; 
   color: #facc15; 
   font-family: 'JetBrains Mono', 'DengXian', monospace; 
-  width: 18%; 
+  width: 16%; 
   text-shadow: 0 0 12px rgba(250, 204, 21, 0.6); 
 }
 
 .col-event { 
   font-weight: 800; 
   color: #ffffff; 
-  width: 20%; 
+  width: 18%; 
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); 
 }
 
 .col-leader { 
   color: #e081ff; 
   font-weight: 800; 
-  width: 16%; 
+  width: 14%; 
   text-shadow: 0 0 12px rgba(224, 129, 255, 0.6); 
 }
 
 .col-personnel { 
   color: #38bdf8; 
   font-weight: 800; 
-  width: 15%; 
+  width: 13%; 
   text-shadow: 0 0 12px rgba(56, 189, 248, 0.6); 
+}
+
+.col-gam { 
+  color: #f472b6; 
+  font-weight: 800; 
+  width: 10%; 
+  text-shadow: 0 0 12px rgba(244, 114, 182, 0.6); 
 }
 
 .col-room { 
@@ -178,8 +185,8 @@ tr:hover td { background: rgba(51, 65, 85, 0.4); }
   text-shadow: 0 0 12px rgba(74, 222, 128, 0.6); 
 }
 
-.col-status { text-align: center; width: 10%; }
-.col-action { text-align: center; width: 10%; }
+.col-status { text-align: center; width: 9%; }
+.col-action { text-align: center; width: 9%; }
 
 /* BADGE STATUS MENYALA */
 .status-badge {
@@ -317,13 +324,14 @@ tr:hover td { background: rgba(51, 65, 85, 0.4); }
           <th class="col-event">Nama Kegiatan</th>
           <th class="col-leader">Pimpinan</th>
           <th class="col-personnel">Personel</th>
+          <th class="col-gam">GAM</th>
           <th class="col-room">Lokasi</th>
           <th class="col-status">Status</th>
           <th class="col-action">Aksi</th>
         </tr>
       </thead>
       <tbody id="main-table-body">
-        <tr><td colspan="7" style="text-align: center; color: #94a3b8;">Menghubungkan ke Database Online Global...</td></tr>
+        <tr><td colspan="8" style="text-align: center; color: #94a3b8;">Menghubungkan ke Database Online Global...</td></tr>
       </tbody>
     </table>
   </div>
@@ -380,9 +388,15 @@ tr:hover td { background: rgba(51, 65, 85, 0.4); }
       </div>
     </div>
 
-    <div class="form-group">
-      <label for="inputLokasi">Lokasi Ruangan:</label>
-      <input type="text" id="inputLokasi" placeholder="Lokasi Ruang / Tempat">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="inputGam">GAM:</label>
+        <input type="text" id="inputGam" placeholder="Contoh: PDU, PDL">
+      </div>
+      <div class="form-group">
+        <label for="inputLokasi">Lokasi Ruangan:</label>
+        <input type="text" id="inputLokasi" placeholder="Lokasi Ruang / Tempat">
+      </div>
     </div>
 
     <button class="btn-add" id="btnAdd" onclick="addNewSchedule()">＋ Simpan ke Database</button>
@@ -567,7 +581,7 @@ function renderSchedules(shouldSave = true) {
   mainTbody.innerHTML = '';
 
   if (systemSchedules.length === 0) {
-    mainTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8; font-weight: bold;">Tidak ada agenda kegiatan saat ini. Klik + Tambah Agenda untuk membuat baru.</td></tr>';
+    mainTbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #94a3b8; font-weight: bold;">Tidak ada agenda kegiatan saat ini. Klik + Tambah Agenda untuk membuat baru.</td></tr>';
     if (shouldSave) saveDataToCloud();
     return;
   }
@@ -607,6 +621,7 @@ function renderSchedules(shouldSave = true) {
         '<td class="col-event"><input type="text" class="edit-input" id="edit-kegiatan" value="' + item.kegiatan + '"></td>' +
         '<td class="col-leader"><input type="text" class="edit-input" id="edit-pimpinan" value="' + (item.pimpinan || '') + '"></td>' +
         '<td class="col-personnel"><input type="text" class="edit-input" id="edit-personel" value="' + (item.personel || '') + '"></td>' +
+        '<td class="col-gam"><input type="text" class="edit-input" id="edit-gam" value="' + (item.gam || '') + '"></td>' +
         '<td class="col-room"><input type="text" class="edit-input" id="edit-lokasi" value="' + item.lokasi + '"></td>' +
         '<td class="col-status"><span class="status-badge status-waiting">Edit Mode</span></td>' +
         '<td class="col-action">' +
@@ -636,6 +651,7 @@ function renderSchedules(shouldSave = true) {
         '<td class="col-event">' + item.kegiatan + '</td>' +
         '<td class="col-leader">' + (item.pimpinan || '-') + '</td>' +
         '<td class="col-personnel">' + (item.personel || '-') + '</td>' +
+        '<td class="col-gam">' + (item.gam || '-') + '</td>' +
         '<td class="col-room">' + item.lokasi + '</td>' +
         '<td class="col-status"><span class="status-badge">Memuat...</span></td>' +
         '<td class="col-action">' +
@@ -671,6 +687,7 @@ function saveInlineEdit(index) {
   const kegiatan = document.getElementById('edit-kegiatan').value.trim();
   const pimpinan = document.getElementById('edit-pimpinan').value.trim();
   const personel = document.getElementById('edit-personel').value.trim();
+  const gam = document.getElementById('edit-gam').value.trim();
   const lokasi = document.getElementById('edit-lokasi').value.trim();
 
   if (!tglMulai || !tglSelesai || !kegiatan || !lokasi) {
@@ -686,7 +703,7 @@ function saveInlineEdit(index) {
   systemSchedules[index] = {
     tglMulai, tglSelesai,
     waktu: sH + ':' + sM + ' - ' + eH + ':' + eM,
-    kegiatan, pimpinan, personel, lokasi
+    kegiatan, pimpinan, personel, gam, lokasi
   };
 
   editingRowIndex = -1;
@@ -714,18 +731,20 @@ async function addNewSchedule() {
   const kegiatan = document.getElementById('inputKegiatan').value.trim();
   const pimpinan = document.getElementById('inputPimpinan').value.trim();
   const personel = document.getElementById('inputPersonel').value.trim();
+  const gam = document.getElementById('inputGam').value.trim();
   const lokasi = document.getElementById('inputLokasi').value.trim();
 
   if (!tglMulai || !tglSelesai || !kegiatan || !lokasi) {
     return alert("Silakan lengkapi tanggal, kegiatan, dan lokasi!");
   }
 
-  systemSchedules.push({ tglMulai, tglSelesai, waktu, kegiatan, pimpinan, personel, lokasi });
+  systemSchedules.push({ tglMulai, tglSelesai, waktu, kegiatan, pimpinan, personel, gam, lokasi });
   renderSchedules(true);
   
   document.getElementById('inputKegiatan').value = '';
   document.getElementById('inputPimpinan').value = '';
   document.getElementById('inputPersonel').value = '';
+  document.getElementById('inputGam').value = '';
   document.getElementById('inputLokasi').value = '';
   toggleModal(false);
 }
